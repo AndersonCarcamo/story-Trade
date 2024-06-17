@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         paddingHorizontal: 20,
         fontSize: 16,
+        marginBottom: 20,
     },
     register_button_container: {
         width: '100%',

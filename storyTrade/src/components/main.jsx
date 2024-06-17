@@ -13,11 +13,11 @@ const Stack = createStackNavigator();
 export function Main() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Complete Profile">
+      <Stack.Navigator initialRouteName="Register">
         {/*<Stack.Screen name="Login" component={LoginScreen}/>*/}
         {/* <Stack.Screen name="Home" component={TabNavigator} options={{ headerShown: false }}/> */}
-        {/*<Stack.Screen name="Register" component={RegisterSceen}/>*/}
-        <Stack.Screen name="Complete Profile" component={CompleteProfile}/>
+        <Stack.Screen name="Register" component={RegisterSceen}/>
+        {/*<Stack.Screen name="Complete Profile" component={CompleteProfile}/>*/}
       </Stack.Navigator>
     </NavigationContainer>
   );
