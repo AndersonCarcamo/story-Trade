@@ -14,39 +14,38 @@ const CompleteProfile = ({ navigation }) => {
       }, []);
     
     return (
-      <View style={styles.register}>
-        <View style={styles.title}>
-            <Text style={styles.title_text}>COMPLETA TU PERFIL</Text>
+        <View style={styles.complete}>
+            <View style={styles.title}>
+                <Text style={styles.title_text}>COMPLETA TU PERFIL</Text>
+            </View>
+            <View style={styles.inputs}>
+                <TextInput
+                    placeholder="Calular"
+                    placeholderTextColor="#aaa"
+                    style={styles.input_text}
+                />
+                <TextInput
+                    placeholder="Edad"
+                    placeholderTextColor="#aaa"
+                    style={styles.input_text}
+                />
+                <TextInput
+                    placeholder="Genero"
+                    placeholderTextColor="#aaa"
+                    style={styles.input_text}
+                />
+            </View>
+            <View style={styles.confirm_button_container}>
+                <TouchableOpacity style={styles.confirm_button}>
+                    <Text style={styles.confirm_button_Text}>Confirmar</Text>
+                </TouchableOpacity>
+            </View>
         </View>
-        <View style={styles.inputs}>
-            <TextInput
-                placeholder="Phone"
-                placeholderTextColor="#aaa"
-                style={styles.input_text}
-            />
-            <TextInput
-                placeholder="Edad"
-                placeholderTextColor="#aaa"
-                style={styles.input_text}
-            />
-            <TextInput
-                placeholder="Genero"
-                placeholderTextColor="#aaa"
-                style={styles.input_text}
-            />
-        </View>
-        <View style={styles.register_button_container}>
-            <TouchableOpacity style={styles.register_button}>
-                <Text style={styles.register_button_Text}>Crear Cuenta</Text>
-            </TouchableOpacity>
-        </View>
-      </View>
     );
 };
 
 const styles = StyleSheet.create({
-    register: {
-        flex: 1,
+    complete: {
         backgroundColor: '#e8e8e8',
         width: '100%',
         height: '100%',
@@ -64,18 +63,18 @@ const styles = StyleSheet.create({
         fontFamily: 'Typewriter-Bold',
         fontSize: 30,
         color: '#fff',
-        textShadowColor: '#949494', // color de la sombra
-        textShadowOffset: { width: 1, height: 1 }, // offset de la sombra (horizontal y vertical)
-        textShadowRadius: 10, // radio de la sombra
+        textShadowColor: '#949494',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 10,
     },
     inputs: {
         flex: 1,
         justifyContent: 'space-between',
         marginVertical: 45,
         paddingHorizontal: 40,
-        height: '100%',
-        //justifyContent: 'center',
+        paddingBottom: 200,
         alignItems: 'center',
+        height: '100%',
     },
     input_text: {
         width: '100%',
@@ -84,17 +83,13 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         paddingHorizontal: 20,
         fontSize: 16,
-        //marginBottom: 15,
-        //marginVertical: 15,
     },
-    register_button_container: {
-        position: 'absolute',
+    confirm_button_container: {
         width: '100%',
         paddingHorizontal: 40,
         marginBottom: 60,
-        bottom: 0,
     },
-    register_button: {
+    confirm_button: {
         width: '100%',
         height: 50,
         backgroundColor: '#ffbd59',
@@ -102,12 +97,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
-      },
-      register_button_Text: {
+    },
+    confirm_button_Text: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
-      },
+    },
 })
 
 export default CompleteProfile;

@@ -73,16 +73,15 @@ const styles = StyleSheet.create({
         fontFamily: 'Typewriter-Bold',
         fontSize: 30,
         color: '#fff',
-        textShadowColor: '#949494', // color de la sombra
-        textShadowOffset: { width: 1, height: 1 }, // offset de la sombra (horizontal y vertical)
-        textShadowRadius: 10, // radio de la sombra
+        textShadowColor: '#949494',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 10,
     },
     inputs: {
         flex: 1,
         justifyContent: 'space-between',
         marginVertical: 45,
         paddingHorizontal: 40,
-        //justifyContent: 'center',
         alignItems: 'center',
         height: '100%',
     },
@@ -93,15 +92,11 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         paddingHorizontal: 20,
         fontSize: 16,
-        //marginBottom: 15,
-        //marginVertical: 15,
     },
     register_button_container: {
-        pposition: 'absolute',
         width: '100%',
         paddingHorizontal: 40,
         marginBottom: 60,
-        bottom: 0,
     },
     register_button: {
         width: '100%',
