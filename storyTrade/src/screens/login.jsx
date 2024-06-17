@@ -1,46 +1,50 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+//import login_styles from '../styles/login_style';
 
 const LoginScreen = ({ navigation }) => {
   return (
-    <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
-      <Text style={styles.title}>StoryTrade</Text>
-      <Text style={styles.subtitle}>¡Compra, vende e intercambia!</Text>
-
-      <TextInput
-        placeholder="Email"
-        placeholderTextColor="#aaa"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Contraseña"
-        placeholderTextColor="#aaa"
-        secureTextEntry
-        style={styles.input}
-      />
-      <View style={styles.rememberForgotContainer}>
-        <TouchableOpacity>
-          <Text style={styles.rememberText}>Recuérdame</Text>
+    <View style={login_styles.container}>
+      <Image source={require('../assets/logo.png')} style={login_styles.logo} />
+      <Text style={login_styles.subtitle}>¡Compra, vende e intercambia!</Text>
+      <View style={login_styles.yellowSquare} />
+      <View style={login_styles.square}>
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#aaa"
+          style={login_styles.inputEmail}
+        />
+        <TextInput
+          placeholder="Contraseña"
+          placeholderTextColor="#aaa"
+          secureTextEntry
+          style={login_styles.inputPassword}
+        />
+        <View style={login_styles.rememberForgotContainer}>
+          <TouchableOpacity>
+            <Text style={login_styles.rememberText}>Recuérdame</Text>
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Text style={login_styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity style={login_styles.loginButton}>
+          <Text style={login_styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+        <TouchableOpacity style={login_styles.googleButton}>
+          <Text style={login_styles.googleButtonText}>Continua con Google</Text>
         </TouchableOpacity>
+        <View style={login_styles.crearCuenta}>
+          <TouchableOpacity>
+            <Text style={login_styles.signupText}>No tienes cuenta? <Text style={login_styles.signupLink}>Crea tu cuenta</Text></Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <TouchableOpacity style={styles.loginButton}>
-        <Text style={styles.loginButtonText}>Login</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.googleButton}>
-        <Text style={styles.googleButtonText}>Continua con Google</Text>
-      </TouchableOpacity>
-      <TouchableOpacity>
-        <Text style={styles.signupText}>No tienes cuenta? <Text style={styles.signupLink}>Crea tu cuenta</Text></Text>
-      </TouchableOpacity>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const login_styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -49,49 +53,69 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 150,
-    height: 150,
-    marginBottom: 20,
+    marginBottom: 5,
+    height: 250,
+    width: 400,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#888',
+    color: '#000',
     marginBottom: 30,
   },
-  input: {
+  yellowSquare: {
+    position: 'absolute',
+    backgroundColor: '#ffbd59',
     width: '100%',
+    height: '50%',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  inputEmail: {
+    width: '80%',
     height: 50,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#e6e1e1',
     borderRadius: 25,
     paddingHorizontal: 20,
     fontSize: 16,
     marginBottom: 15,
+    marginTop: 30,
+  },
+  inputPassword: {
+    width: '80%',
+    height: 50,
+    backgroundColor: '#e6e1e1',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    marginTop: 10,
   },
   rememberForgotContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 20,
+    width: '80%',
+    marginTop: 10,
   },
   rememberText: {
-    color: '#aaa',
+    color: '#3685cd',
   },
   forgotText: {
-    color: '#aaa',
+    color: '#3685cd',
   },
   loginButton: {
-    width: '100%',
+    width: '80%',
     height: 50,
-    backgroundColor: '#FFA726',
+    backgroundColor: '#ffbd59',
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+    marginTop: 25,
   },
   loginButtonText: {
     color: '#fff',
@@ -99,16 +123,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   googleButton: {
-    width: '100%',
+    width: '80%',
     height: 50,
-    backgroundColor: '#DB4437',
+    backgroundColor: '#fff',
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+    borderColor: '#000',
+    borderWidth: 1,
   },
   googleButtonText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -116,7 +142,21 @@ const styles = StyleSheet.create({
     color: '#aaa',
   },
   signupLink: {
-    color: '#FFA726',
+    color: '#3685cd',
+  },
+  square: {
+    width: '100%',
+    marginLeft: 20,
+    marginRight: 20,
+    marginBottom: 30,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  crearCuenta: {
+    marginBottom: 20,
   },
 });
 
