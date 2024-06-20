@@ -50,7 +50,7 @@ const login_styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 20,
+    //padding: 20,
   },
   logo: {
     marginBottom: 5,
@@ -145,9 +145,7 @@ const login_styles = StyleSheet.create({
     color: '#3685cd',
   },
   square: {
-    width: '100%',
-    marginLeft: 20,
-    marginRight: 20,
+    width: '90%',
     marginBottom: 30,
     paddingHorizontal: 20,
     paddingVertical: 20,
