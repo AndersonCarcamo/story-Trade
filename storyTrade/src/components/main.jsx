@@ -5,17 +5,23 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 // import { TabNavigator } from "./tabNavigator";
 import LoginScreen from "../screens/login";
+
 import UserProfile from "../screens/profile";
+
+import AddBook from '../screens/addBook';
+
 
 const Stack = createStackNavigator();
 
 export function Main() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="UserProfile">
-        {/*<Stack.Screen name="Login" component={LoginScreen}/>*/}
+
+      <Stack.Navigator initialRouteName="Add Book">
+        {/* <Stack.Screen name="Login" component={LoginScreen}/> */}
         {/* <Stack.Screen name="Home" component={TabNavigator} options={{ headerShown: false }}/> */}
-        <Stack.Screen name="UserProfile" component={UserProfile}/>
+        <Stack.Screen name="Add Book" component={AddBook}/>
+
       </Stack.Navigator>
     </NavigationContainer>
   );
