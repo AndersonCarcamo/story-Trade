@@ -1,0 +1,31 @@
+[
+    {
+      "id": 1,
+      "title": "Bajo La Misma Estrella",
+      "author": "John Green",
+      "image": "book1.jpg",
+      "description": "Hazel Grace Lancaster es una adolescente con cáncer...",
+      "rating": 4.1,
+      "users": [
+        { "name": "Jose Sáenz", "avatar": "avatar1.png", "rating": 4, "exchanges": 12 },
+        { "name": "Luna Díaz", "avatar": "avatar1.png", "rating": 4, "exchanges": 9 },
+        { "name": "Ana López", "avatar": "avatar1.png", "rating": 3, "exchanges": 5 },
+        { "name": "Fabricio C.", "avatar": "avatar1.png", "rating": 4, "exchanges": 11 },
+        { "name": "Carmen P.", "avatar": "avatar1.png", "rating": 2, "exchanges": 2 },
+        { "name": "Ariana G.", "avatar": "avatar1.png", "rating": 3, "exchanges": 7 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Book 2",
+      "author": "Author 2",
+      "image": "book2.jpeg",
+      "description": "Description for book 2",
+      "rating": 4.5,
+      "users": [
+        { "name": "User 1", "avatar": "avatar1.png", "rating": 5, "exchanges": 10 },
+        { "name": "User 2", "avatar": "avatar1.png", "rating": 3, "exchanges": 7 }
+      ]
+    }
+  ]
+  

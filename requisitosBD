@@ -1,0 +1,33 @@
+Libro:
+	Titulo
+	Autor
+	Editorial
+	Antiguedad
+	Foto
+	Video de estado
+	Descripcion
+	Rating
+	tag // por ejemplo terror, romance, policiacos etc
+Usuario:
+	Email
+	Contraseña
+	Nombre Completo
+	username
+	Edad
+	Celular
+	Género // Masculino, Femenino, No binario, Otro
+	
+	foto_avatar
+	Intereses 
+	calificacion // todas en 0
+	cant_intercambios_hechos
+
+Un usario puede tener de 0 a n libros. Donde cada libro tendrá titulo, Autor, editorial, Antiguedad, Foto, Descripcion y Rating. Ademas de eso necesita adjuntar un video del estado del libro. Cada libro tiene un solo usuario. Sin embargo varios usuarios pueden tener el mismo libro, pero cada uno es solo de pertenencia del usuario.
+
+Un usuario puede tener de 0 a n intereses. Cada interes puede tener de 0 a usuarios.
+
+Un intercambio se realiza entre dos usuarios, donde el libro intercambiado pasa a ser del usuario que lo adquiere.
+
+Cada libro tiene asignado de 1 n tags. Dichos tags son los mismos que los intereses del usuario.
+
+

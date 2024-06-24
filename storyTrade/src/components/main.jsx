@@ -12,6 +12,7 @@ import UserProfile from "../screens/profile";
 
 import AddBook from '../screens/addBook';
 
+import Home from '../screens/home';
 
 const Stack = createStackNavigator();
 
@@ -22,9 +23,9 @@ export function Main() {
       <Stack.Navigator initialRouteName="Register">
         {/*<Stack.Screen name="Login" component={LoginScreen}/>*/}
         {/* <Stack.Screen name="Home" component={TabNavigator} options={{ headerShown: false }}/> */}
-        <Stack.Screen name="Register" component={RegisterSceen}/>
+        {/* <Stack.Screen name="Register" component={RegisterSceen}/> */}
         {/*<Stack.Screen name="Complete Profile" component={CompleteProfile}/>*/}
-
+        <Stack.Screen name="Home" component={Home}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
