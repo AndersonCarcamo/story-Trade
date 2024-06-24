@@ -1,66 +1,113 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-//import login_styles from '../styles/login_style';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      
+      console.log('Intentando iniciar sesión con:', email, password);
+      /*
+      const response = await axios.post('http://127.0.0.1:5000/login', {
+        email,
+        password,
+      });*/
+      const response = await fetch('http://127.0.0.1:5000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+      console.log('no c que pasa');
+      if (response.status === 200){
+        const user = response.data;
+        await AsyncStorage.setItem('userToken', user.id.toString());
+        await AsyncStorage.setItem('userId', user.id.toString());
+        navigation.navigate('Profile', { userId: user.id });
+      } else {
+        Alert.alert('Error', 'Error en las credenciales');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
+    }
+  }
+  
   return (
-    <View style={login_styles.container}>
-      <Image source={require('../assets/logo.png')} style={login_styles.logo} />
-      <Text style={login_styles.subtitle}>¡Compra, vende e intercambia!</Text>
-      <View style={login_styles.yellowSquare} />
-      <View style={login_styles.square}>
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#aaa"
-          style={login_styles.inputEmail}
-        />
-        <TextInput
-          placeholder="Contraseña"
-          placeholderTextColor="#aaa"
-          secureTextEntry
-          style={login_styles.inputPassword}
-        />
-        <View style={login_styles.rememberForgotContainer}>
-          <TouchableOpacity>
-            <Text style={login_styles.rememberText}>Recuérdame</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={login_styles.container}
+    >
+      <ScrollView contentContainerStyle={login_styles.scrollContainer} keyboardShouldPersistTaps="handled">
+        <Image source={require('../assets/logo.png')} style={login_styles.logo} />
+        <View style={login_styles.yellowSquare} />
+        <View style={login_styles.square}>
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#aaa"
+            value={email}
+            onChangeText={setEmail}
+            style={login_styles.inputEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <TextInput
+            placeholder="Contraseña"
+            placeholderTextColor="#aaa"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={login_styles.inputPassword}
+            autoCapitalize='none'
+          />
+          <View style={login_styles.rememberForgotContainer}>
+            <TouchableOpacity>
+              <Text style={login_styles.rememberText}>Recuérdame</Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={login_styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity style={login_styles.loginButton} onPress={handleLogin}>
+            <Text style={login_styles.loginButtonText}>Login</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={login_styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+          <TouchableOpacity style={login_styles.googleButton}>
+            <Text style={login_styles.googleButtonText}>Continua con Google</Text>
           </TouchableOpacity>
+          <View style={login_styles.crearCuenta}>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={login_styles.signupText}>¿No tienes cuenta? <Text style={login_styles.signupLink}>Crea tu cuenta</Text></Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <TouchableOpacity style={login_styles.loginButton}>
-          <Text style={login_styles.loginButtonText}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={login_styles.googleButton}>
-          <Text style={login_styles.googleButtonText}>Continua con Google</Text>
-        </TouchableOpacity>
-        <View style={login_styles.crearCuenta}>
-          <TouchableOpacity>
-            <Text style={login_styles.signupText}>No tienes cuenta? <Text style={login_styles.signupLink}>Crea tu cuenta</Text></Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const login_styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    //padding: 20,
+    paddingVertical: 20,
   },
   logo: {
     marginBottom: 5,
     height: 250,
     width: 400,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
