@@ -1,24 +1,50 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
+<<<<<<< Profile_Fix
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const LoginScreen = ({ navigation }) => {
+=======
 
 const LoginScreen = ({ navigation }) => {
 
+>>>>>>> Register_Login_HotFix
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     try {
+<<<<<<< Profile_Fix
+      
+      console.log('Intentando iniciar sesión con:', email, password);
+      
+      const response = await axios.post('http://10.0.2.2:5000/login', {
+        email,
+        password,
+      });
+      console.log('respondio');
+      if (response.status === 200){
+        const user = response.data;
+        await AsyncStorage.setItem('userToken', user.id.toString());
+        await AsyncStorage.setItem('userId', user.id.toString());
+        navigation.navigate('Profile', { userId: user.id });
+=======
       const response = await axios.post('poner-API', {
         email,
         password,
       });
       if (response.status === 200){
         navigation.navigate('Home', { user: response.data.user });
+>>>>>>> Register_Login_HotFix
       } else {
         Alert.alert('Error', 'Error en las credenciales');
       }
     } catch (error) {
+<<<<<<< Profile_Fix
+      console.log('No respondio')
+=======
+>>>>>>> Register_Login_HotFix
       console.error(error);
       Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
     }
@@ -31,7 +57,10 @@ const LoginScreen = ({ navigation }) => {
     >
       <ScrollView contentContainerStyle={login_styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <Image source={require('../assets/logo.png')} style={login_styles.logo} />
+<<<<<<< Profile_Fix
+=======
         {/*<Text style={login_styles.subtitle}>¡Compra, vende e intercambia!</Text>*/}
+>>>>>>> Register_Login_HotFix
         <View style={login_styles.yellowSquare} />
         <View style={login_styles.square}>
           <TextInput
