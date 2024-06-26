@@ -12,16 +12,20 @@ const UserProfile = ({ route, navigation }) => {
     const fetchUser = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        const response = await axios.get(`poner-API/users/${userId}`, {
+        const response = await axios.get(`http://10.0.2.2:5000/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
+        console.log('Se leyo el perfil');
         setUser(response.data);
 
         // Comprobamos si es el perfil del propio usuario
         const loggedInUserId = await AsyncStorage.getItem('userId');
-        setIsOwnProfile(userId === loggedInUserId);
+        setIsOwnProfile(userId == loggedInUserId);
+        console.log();
+        console.log(userId);
+        console.log(loggedInUserId);
       } catch (error) {
         console.error(error);
         Alert.alert('Error', 'No se pudo cargar el perfil');
@@ -29,14 +33,16 @@ const UserProfile = ({ route, navigation }) => {
     };
 
     fetchUser();
+    console.log('Se corrio el codigo anterior');
   }, [userId]);
 
   if (!user) {
     return <Text>Cargando...</Text>;
   }
-
+  console.log('se leyoo la pantalla');
   return (
     <View style={{ flex: 1, padding: 20 }}>
+      {console.log('aqui si funciona')}
       <Text>{user.name}</Text>
       <Text>{user.email}</Text>
 

@@ -11,22 +11,12 @@ const LoginScreen = ({ navigation }) => {
     try {
       
       console.log('Intentando iniciar sesión con:', email, password);
-      /*
-      const response = await axios.post('http://127.0.0.1:5000/login', {
+      
+      const response = await axios.post('http://10.0.2.2:5000/login', {
         email,
         password,
-      });*/
-      const response = await fetch('http://127.0.0.1:5000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
       });
-      console.log('no c que pasa');
+      console.log('respondio');
       if (response.status === 200){
         const user = response.data;
         await AsyncStorage.setItem('userToken', user.id.toString());
@@ -36,6 +26,7 @@ const LoginScreen = ({ navigation }) => {
         Alert.alert('Error', 'Error en las credenciales');
       }
     } catch (error) {
+      console.log('No respondio')
       console.error(error);
       Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
     }

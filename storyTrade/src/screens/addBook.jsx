@@ -10,7 +10,7 @@ const AddBook = ({ navigation }) => {
   const handleAddBook = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.post('poner-API/books', { title, author }, {
+      const response = await axios.post('http://127.0.0.1:5000/users/${userId}/books', { title, author }, {
         headers: {
           Authorization: `Bearer ${token}`
         }

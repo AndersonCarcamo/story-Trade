@@ -15,7 +15,7 @@ const AddGenre = ({ navigation }) => {
     }
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.post('poner-API/genres', { genre: selectedGenre }, {
+      const response = await axios.post('http://127.0.0.1:5000/users/${userId}/genres', { genre: selectedGenre }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
