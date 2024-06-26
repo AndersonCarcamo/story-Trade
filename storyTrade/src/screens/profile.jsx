@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 const UserProfile = ({ route, navigation }) => {
-  const { userId } = route.params; // Obtenemos el ID del usuario desde la ruta
+  const { userId } = route.params;
   const [user, setUser] = useState(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
 
