@@ -3,14 +3,15 @@ import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'reac
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const AddBook = ({ navigation }) => {
+const AddBook = ({ route, navigation }) => {
+  const { userId } = route.params; // Recibir userId
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
 
   const handleAddBook = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.post('http://127.0.0.1:5000/users/${userId}/books', { title, author }, {
+      const response = await axios.post(`http://10.0.2.2:5000/users/${userId}/books`, { title, author }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -49,6 +50,7 @@ const AddBook = ({ navigation }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

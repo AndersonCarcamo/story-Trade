@@ -42,7 +42,6 @@ const UserProfile = ({ route, navigation }) => {
   console.log('se leyoo la pantalla');
   return (
     <View style={{ flex: 1, padding: 20 }}>
-      {console.log('aqui si funciona')}
       <Text>{user.name}</Text>
       <Text>{user.email}</Text>
 
@@ -53,18 +52,17 @@ const UserProfile = ({ route, navigation }) => {
             data={user.genres}
             renderItem={({ item }) => <Text>{item}</Text>}
           />
-          <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddGenre')}>
-            <Text style={styles.addButtonText}>Agregar género</Text>
+          <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddGenre', { userId })}>
+            <Text style={styles.addButtonText}>Agregar Genero</Text>
           </TouchableOpacity>
-
+          <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddBook', { userId })}>
+            <Text style={styles.addButtonText}>Agregar libro</Text>
+          </TouchableOpacity>
           <Text>Lista de libros:</Text>
           <FlatList
             data={user.books}
             renderItem={({ item }) => <Text>{item.title}</Text>}
           />
-          <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddBook')}>
-            <Text style={styles.addButtonText}>Agregar libro</Text>
-          </TouchableOpacity>
         </View>
       )}
     </View>

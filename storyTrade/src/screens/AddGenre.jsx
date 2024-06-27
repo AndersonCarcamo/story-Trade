@@ -5,7 +5,8 @@ import axios from 'axios';
 
 const genres = ['Romance', 'Fantasía', 'Terror', 'Policial', 'Ciencia Ficción'];
 
-const AddGenre = ({ navigation }) => {
+const AddGenre = ({ route, navigation }) => {
+  const { userId } = route.params;
   const [selectedGenre, setSelectedGenre] = useState(null);
 
   const handleAddGenre = async () => {
@@ -15,7 +16,7 @@ const AddGenre = ({ navigation }) => {
     }
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.post('http://127.0.0.1:5000/users/${userId}/genres', { genre: selectedGenre }, {
+      const response = await axios.post(`http://10.0.2.2:5000/users/${userId}/genres`, { genre: selectedGenre }, {
         headers: {
           Authorization: `Bearer ${token}`
         }

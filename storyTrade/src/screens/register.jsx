@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as Font from 'expo-font';
 
@@ -29,23 +30,48 @@ const RegisterScreen = ({ navigation }) => {
       Alert.alert('Error', 'Las contraseñas no coinciden');
       return;
     }
-
     try {
-      const response = await axios.post('poner-API', {
+      const response = await axios.post(`http://10.0.2.2:5000/users`, {
         email,
         nombre,
         username,
         password,
       });
 
-      if (response.status === 200) {
-        navigation.navigate('Home', { user: response.data.user });
+      if (response.status === 201) {
+        // Añadir un pequeño retardo antes de intentar iniciar sesión
+        setTimeout(() => {
+          handleLogin();
+        }, 500); // Retardo de 500ms
       } else {
         Alert.alert('Error', 'Error en las credenciales');
       }
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo');
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      console.log('Intentando iniciar sesión con:', email, password);
+      const response = await axios.post('http://10.0.2.2:5000/login', {
+        email,
+        password,
+      });
+      console.log('respondio');
+      if (response.status === 200) {
+        const user = response.data;
+        await AsyncStorage.setItem('userToken', user.id.toString());
+        await AsyncStorage.setItem('userId', user.id.toString());
+        navigation.navigate('Profile', { userId: user.id });
+      } else {
+        Alert.alert('Error', 'Error en las credenciales');
+      }
+    } catch (error) {
+      console.log('No respondio');
+      console.error(error);
+      Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
     }
   };
 
@@ -73,6 +99,7 @@ const RegisterScreen = ({ navigation }) => {
               placeholderTextColor="#aaa"
               value={email}
               onChangeText={setEmail}
+              keyboardType="email-address"
               autoCapitalize="none"
             />
             <TextInput
