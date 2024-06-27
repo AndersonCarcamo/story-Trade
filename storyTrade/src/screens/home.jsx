@@ -21,10 +21,16 @@ const Home = () => {
     const [search, setSearch] = useState('');
     const [selectedBook, setSelectedBook] = useState(null);
     const [books, setBooks] = useState([]);
+    const [fotsLoaded, setFontsLoaded] = useState(false);
 
 
     useEffect(() => {
-        // Simula la carga de datos
+        const loadFonts = async () => {
+            await Font.loadAsync({
+                'Typewriter-Bold': require('../assets/Fonts/TrueTypewriter/Typewriter-Bold.ttf')
+            });
+            setFontsLoaded(True);
+        }
         setBooks(booksData);
     }, []);
 
