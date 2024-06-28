@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
-from models2 import app, db, User, Book, BookInfo, Genre, Like, Notification, Match, PaymentOption
+from models2 import app, db, User, Book, BookInfo, Genre, Like, Notification, Match, PaymentOption, Transaction
 from sqlalchemy import func
 
 
@@ -74,6 +74,7 @@ def update_user(user_id):
     user.age = request.json.get('age', user.age)
     user.avatar = request.json.get('avatar', user.avatar)
     user.rating = request.json.get('rating', user.rating)
+    user.rating_count = request.json.get('rating_count', user.rating_count)
     user.exchanges = request.json.get('exchanges', user.exchanges)
     db.session.commit()
     return jsonify(user.as_dict())
@@ -233,24 +234,79 @@ def login():
         abort(401)
     return jsonify({"id": user.id, "email": user.email, "name": user.name})
 
-@app.route('/likes', methods=['POST'])
-def like_book():
-    if not request.json or not 'user_id' in request.json or not 'book_id' in request.json:
-        abort(400)
-    like = Like(
-        user_id=request.json['user_id'],
-        book_id=request.json['book_id'],
-        liker_id=request.json['liker_id']
-    )
+@app.route('/like/<int:book_id>', methods=['POST'])
+def like_book(book_id):
     try:
-        db.session.add(like)
+        if not request.json or not 'user_id' in request.json or not 'liker_id' in request.json:
+            abort(400, description="user_id and liker_id are required")
+
+        user_id = request.json['user_id']
+        liker_id = request.json['liker_id']
+
+        existing_like = Like.query.filter_by(user_id=user_id, book_id=book_id, liker_id=liker_id).first()
+        if existing_like:
+            abort(400, description="You have already liked this book")
+
+        like = Like(
+            user_id=user_id,
+            book_id=book_id,
+            liker_id=liker_id
+        )
+
+        like = Like(user_id=user_id, book_id=book_id, liker_id=liker_id)
+        try:
+            db.session.add(like)
+            db.session.commit()
+            create_notification(like.user_id, f"Your book has been liked by user {like.liker_id}")
+
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+            abort(500, description="Internal Server Error")
+
+        return jsonify(like.as_dict()), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error: {e}")
+        abort(500, description="Internal Server Error")
+
+@app.route('/unlike/<int:book_id>', methods=['POST'])
+def unlike_book(book_id):
+    if not request.json or not 'user_id' in request.json or not 'liker_id' in request.json:
+        abort(400, description="user_id and liker_id are required")
+
+    user_id = request.json['user_id']
+    liker_id = request.json['liker_id']
+
+    # Verificar si el like existe
+    existing_like = Like.query.filter_by(user_id=user_id, book_id=book_id, liker_id=liker_id).first()
+    if not existing_like:
+        abort(400, description="You have not liked this book yet")
+
+    try:
+        db.session.delete(existing_like)
         db.session.commit()
-        create_notification(like.user_id, f"Your book has been liked by user {like.liker_id}")
+        create_notification(existing_like.user_id, f"Your book has been unliked by user {existing_like.liker_id}")
     except Exception as e:
         db.session.rollback()
         print(e)
-        abort(500)
-    return jsonify(like.as_dict()), 201
+        abort(500, description="Internal Server Error")
+
+    return jsonify({"message": "Like removed"}), 200
+
+@app.route('/like/<int:book_id>/check', methods=['POST'])
+def check_like(book_id):
+    if not request.json or not 'user_id' in request.json or not 'liker_id' in request.json:
+        abort(400, description="user_id and liker_id are required")
+
+    user_id = request.json['user_id']
+    liker_id = request.json['liker_id']
+
+    # Verificar si el like ya existe
+    existing_like = Like.query.filter_by(user_id=user_id, book_id=book_id, liker_id=liker_id).first()
+    return jsonify({"hasLiked": existing_like is not None})
+
 
 @app.route('/notifications/<int:user_id>', methods=['GET'])
 def get_notifications(user_id):
@@ -292,6 +348,67 @@ def get_matches(user_id):
 def get_payment_options():
     payment_options = PaymentOption.query.all()
     return jsonify([option.as_dict() for option in payment_options])
+
+@app.route('/transactions', methods=['POST'])
+def create_transaction():
+    if not request.json or not 'user_id' in request.json or not 'book_id' in request.json:
+        abort(400)
+    transaction = Transaction(
+        user_id=request.json['user_id'],
+        book_id=request.json['book_id'],
+        rating=request.json.get('rating', 0.0)
+    )
+    try:
+        db.session.add(transaction)
+        db.session.commit()
+        # Actualizar el rating del usuario
+        user = User.query.get(transaction.user_id)
+        if user:
+            user.transaction_rating = (user.transaction_rating * user.exchanges + transaction.rating) / (user.exchanges + 1)
+            user.exchanges += 1
+            db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+        abort(500)
+    return jsonify(transaction.as_dict()), 201
+
+@app.route('/users/<int:user_id>/rating', methods=['POST'])
+def update_user_rating(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        abort(404)
+    if not request.json or not 'rating' in request.json:
+        abort(400)
+    rating = request.json['rating']
+    user.rating = (user.rating * user.rating_count + rating) / (user.rating_count + 1)
+    user.rating_count += 1
+    db.session.commit()
+    return jsonify(user.as_dict())
+
+@app.route('/transactions/<int:transaction_id>/rate', methods=['POST'])
+def rate_transaction(transaction_id):
+    data = request.get_json()
+    user_rating = data.get('user_rating')
+    transaction_rating = data.get('transaction_rating')
+    
+    # Actualizar la calificación de la transacción
+    transaction = Transaction.query.get(transaction_id)
+    if transaction is None:
+        abort(404, description="Transaction not found")
+    transaction.rating = transaction_rating
+    db.session.commit()
+
+    # Actualizar la calificación del usuario
+    user = User.query.get(transaction.user_id)
+    if user is None:
+        abort(404, description="User not found")
+    new_rating = (user.rating * user.rating_count + user_rating) / (user.rating_count + 1)
+    user.rating = new_rating
+    user.rating_count += 1
+    db.session.commit()
+
+    return jsonify({"message": "Rating updated successfully"})
 
 def create_notification(user_id, message):
     notification = Notification(

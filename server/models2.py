@@ -15,6 +15,8 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 db = SQLAlchemy(app)
 
+# agregar CREATE EXTENSION IF NOT EXISTS unaccent; despues de crear
+
 # Asociación muchos a muchos para usuarios y géneros
 user_genres = db.Table('user_genres',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
@@ -84,28 +86,7 @@ class BookInfo(db.Model):
             "rating": self.rating,
             "release_year": self.release_year
         }
-    
-# @listens_for(BookInfo, 'before_insert')
-# def update_tsvector(mapper, connection, target):
-#     target.tsvector = func.to_tsvector(
-#         'spanish',
-#         ' '.join([
-#             target.title,
-#             target.author,
-#             target.category
-#         ])
-#     )
 
-# @listens_for(BookInfo, 'before_update')
-# def update_tsvector(mapper, connection, target):
-#     target.tsvector = func.to_tsvector(
-#         'spanish',
-#         ' '.join([
-#             target.title,
-#             target.author,
-#             target.category
-#         ])
-#     )
 
 class Book(db.Model):
     __tablename__ = 'books'
@@ -203,6 +184,23 @@ class PaymentOption(db.Model):
             "price": self.price
         }
     
+class Transaction(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    rating = db.Column(db.Float, nullable=True)
+    timestamp = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "book_id": self.book_id,
+            "rating": self.rating,
+            "timestamp": self.timestamp
+        }
+
 @listens_for(BookInfo, 'before_insert')
 def update_tsvector(mapper, connection, target):
     target.tsvector = func.to_tsvector(
