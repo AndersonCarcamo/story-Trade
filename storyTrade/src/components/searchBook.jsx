@@ -6,21 +6,6 @@ import { FontAwesome } from '@expo/vector-icons';
 import defaultImage from '../assets/default_image.jpg'
 import SearchInput from './searchInput';
 
-// const groupBooksByCategory = (books) => {
-//   console.log('Grouping books by category:', books);
-//   const groupedBooks = books.reduce((acc, book) => {
-//     const category = book.book_info && book.book_info.category ? book.book_info.category : 'Unknown';
-//     if (!acc[category]) {
-//       acc[category] = [];
-//     }
-//     acc[category].push(book);
-//     return acc;
-//   }, {});
-
-//   console.log('Result of groupBooksByCategory function:', groupedBooks);
-//   return groupedBooks;
-// };
-
 const groupBooksByCategory = (books) => {
   console.log('Grouping books by category:', books);
   const groupedBooks = books.reduce((acc, book) => {

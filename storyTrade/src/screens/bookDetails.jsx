@@ -3,94 +3,111 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import SearchInput from '../components/searchInput';
+import defaultImage from '../assets/default_image.jpg'; 
 
 const fetchImage = async (imageName) => {
-    try {
-        const response = await fetch(`http://localhost:3000/get?user=bookinfo&mediaType=images&fileName=${imageName}`);
-        if (response.ok) {
-        return response.url;
-        } else {
-        return null; // o una imagen por defecto
-        }
-    } catch (error) {
-        console.error(`Failed to fetch image ${imageName}: `, error);
-        return null; // o una imagen por defecto
-    }
+  try {
+      const response = await fetch(`http://localhost:3000/get?mediaType=images&fileName=${imageName}`);
+      if (response.ok) {
+          return response.url;
+      } else {
+          return defaultImage; // Devuelve una imagen por defecto en caso de error
+      }
+  } catch (error) {
+      console.error(`Failed to fetch image ${imageName}: `, error);
+      return defaultImage; // Devuelve una imagen por defecto en caso de error
+  }
 };
   
 const fetchUserAvatar = async (avatarName) => {
-    try {
-        const response = await fetch(`http://localhost:3000/get?user=avatars&mediaType=images&fileName=${avatarName}`);
-        if (response.ok) {
-        return response.url;
-        } else {
-        return null; // o una imagen por defecto
-        }
-    } catch (error) {
-        console.error(`Failed to fetch avatar ${avatarName}: `, error);
-        return null; // o una imagen por defecto
-    }
+  try {
+      const response = await fetch(`http://localhost:3000/get?user=avatars&mediaType=images&fileName=${avatarName}`);
+      if (response.ok) {
+          return response.url;
+      } else {
+          return defaultImage; // Devuelve una imagen por defecto en caso de error
+      }
+  } catch (error) {
+      console.error(`Failed to fetch avatar ${avatarName}: `, error);
+      return defaultImage; // Devuelve una imagen por defecto en caso de error
+  }
+};
+
+const fetchUserInfo = async (userId) => {
+  try {
+      const response = await fetch(`http://localhost:5000/users/${userId}`);
+      if (response.ok) {
+          return await response.json();
+      } else {
+          console.error(`Failed to fetch user info for user ${userId}`);
+          return null;
+      }
+  } catch (error) {
+      console.error(`Failed to fetch user info for user ${userId}: `, error);
+      return null;
+  }
 };
 
 const BookDetails = ({ book, goBack }) => {
 
-    const [bookImage, setBookImage] = useState(null);
-    const [userAvatars, setUserAvatars] = useState({});
+  const [bookImage, setBookImage] = useState(defaultImage);
+  const [user, setUser] = useState(null);
+  const [userAvatar, setUserAvatar] = useState(defaultImage);
 
-    useEffect(() => {
-        const loadBookImage = async () => {
-          const imageUrl = await fetchImage(book.image);
-          setBookImage(imageUrl);
-        };
-    
-        const loadUserAvatars = async () => {
-          const avatars = {};
-          for (const user of book.users) {
-            const avatarUrl = await fetchUserAvatar(user.avatar);
-            avatars[user.id] = avatarUrl;
-          }
-          setUserAvatars(avatars);
-        };
-    
-        loadBookImage();
-        loadUserAvatars();
-      }, [book]);
+  useEffect(() => {
+    const loadBookImage = async () => {
+        const imageUrl = await fetchImage(book.book_info.image);
+        setBookImage(imageUrl);
+    };
 
-    return (
-        <View style={styles.container}>
-            <TouchableOpacity onPress={goBack} style={styles.backButton}>
-            <FontAwesome name="arrow-left" size={24} color="#FFA500" />
-            </TouchableOpacity>
-            <SearchInput />
-            <ScrollView>
-            <View style={styles.bookDetails}>
-                <Image source={{ uri: bookImage }} style={styles.bookImage} />
-                <View style={styles.bookInfo}>
-                <Text style={styles.bookTitle}>{book.title}</Text>
-                <Text style={styles.bookAuthor}>{book.author}</Text>
-                <Text style={styles.bookDescription}>{book.description}</Text>
-                <Text style={styles.bookRating}>Goodreads rating: {book.rating}★</Text>
-                </View>
-            </View>
-            <Text style={styles.exchangeTitle}>Intercambia con:</Text>
-            <View style={styles.usersContainer}>
-                {book.users.map((user, index) => (
-                <View key={index} style={styles.user}>
-                    <Image source={{ uri: userAvatars[user.id] }} style={styles.userAvatar} />
-                    <Text style={styles.userName}>{user.name}</Text>
-                    <View style={styles.userRating}>
-                    {[...Array(5)].map((_, i) => (
-                        <FontAwesome key={i} name="star" size={16} color={i < user.rating ? "#FFD700" : "#DDD"} />
-                    ))}
-                    </View>
-                    <Text style={styles.userExchanges}>{user.exchanges}</Text>
-                </View>
-                ))}
-            </View>
-            <Text style={styles.viewMore}>ver más...</Text>
-            </ScrollView>
-        </View>
-    );
+    const loadUserInfo = async () => {
+        const userInfo = await fetchUserInfo(book.user_id);
+        if (userInfo) {
+            setUser(userInfo);
+            const avatarUrl = await fetchUserAvatar(userInfo.avatar);
+            setUserAvatar(avatarUrl);
+        }
+    };
+
+    loadBookImage();
+    loadUserInfo();
+}, [book]);
+
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity onPress={goBack} style={styles.backButton}>
+          <FontAwesome name="arrow-left" size={24} color="#FFA500" />
+      </TouchableOpacity>
+      <SearchInput />
+      <ScrollView>
+          <View style={styles.bookDetails}>
+              <Image source={{ uri: bookImage }} style={styles.bookImage} />
+              <View style={styles.bookInfo}>
+                  <Text style={styles.bookTitle}>{book.book_info.title}</Text>
+                  <Text style={styles.bookAuthor}>{book.book_info.author}</Text>
+                  <Text style={styles.bookDescription}>{book.book_info.description}</Text>
+                  <Text style={styles.bookRating}>Goodreads rating: {book.book_info.rating}★</Text>
+              </View>
+          </View>
+          <Text style={styles.exchangeTitle}>Intercambia con:</Text>
+          <View style={styles.usersContainer}>
+              {user && (
+                  <View key={user.id} style={styles.user}>
+                      <Image source={{ uri: userAvatar }} style={styles.userAvatar} />
+                      <Text style={styles.userName}>{user.name}</Text>
+                      <View style={styles.userRating}>
+                          {[...Array(5)].map((_, i) => (
+                              <FontAwesome key={i} name="star" size={16} color={i < user.rating ? "#FFD700" : "#DDD"} />
+                          ))}
+                      </View>
+                      <Text style={styles.userExchanges}>{user.exchanges} intercambios</Text>
+                  </View>
+              )}
+          </View>
+          <Text style={styles.viewMore}>ver más...</Text>
+      </ScrollView>
+    </View>
+  );
 };
 
 
