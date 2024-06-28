@@ -73,8 +73,37 @@ const Home = () => {
       setSearch(text);
   };
 
+
+  
   const viewDetails = (book) => {
-      setSelectedBook(book);
+    // let normalizedBook = book;
+
+    // if (!book.book_info) {
+    //   console.log('entra aqui')
+    //   normalizedBook = {
+    //     book_info: {
+    //       author: book.author,
+    //       category: book.category,
+    //       description: book.description,
+    //       id: book.id,
+    //       image: book.image,
+    //       rating: book.rating,
+    //       release_year: book.release_year,
+    //       title: book.title
+    //     },
+    //     antiquity: book.antiquity,
+    //     book_info_id: book.id,
+    //     editorial: book.editorial,
+    //     id: book.id,
+    //     imageUri: book.imageUri,
+    //     user_id: book.user_id,
+    //     video: book.video
+    //   };
+    // }
+    // console.log('book_Info: ', normalizedBook);
+    // setSelectedBook(normalizedBook);
+    console.log('book_Info: ', book);
+    setSelectedBook(book);
   };
 
   const goBack = () => {
@@ -99,7 +128,7 @@ const Home = () => {
             viewDetails={viewDetails}
             />
         )}
-        <Footer />
+        {/* <Footer /> */}
     </SafeAreaView>
 );
 };

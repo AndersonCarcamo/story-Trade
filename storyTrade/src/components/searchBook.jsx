@@ -7,26 +7,22 @@ import defaultImage from '../assets/default_image.jpg'
 import SearchInput from './searchInput';
 
 const groupBooksByCategory = (books) => {
-  // console.log('Grouping books by category:', books);
   const groupedBooks = books.reduce((acc, book) => {
-    const category = book.book_info && book.book_info.category ? book.book_info.category : (book.category ? book.category : 'Unknown');
+    const category = book.book_info && book.book_info.category ? book.book_info.category : 'Unknown';
     if (!acc[category]) {
       acc[category] = [];
     }
     acc[category].push(book);
     return acc;
   }, {});
-
-  // console.log('Result of groupBooksByCategory function:', groupedBooks);
   return groupedBooks;
 };
-
 
 // conexion con la api de media para obtener la imagen del libro
 const fetchBookImages = async (books) => {
   const updatedBooks = await Promise.all(
     books.map(async (book) => {
-      const imageFileName = book.book_info ? book.book_info.image : book.image;
+      const imageFileName = book.book_info?.image;
       if (!imageFileName) {
         book.imageUri = defaultImage;
       } else {
@@ -64,7 +60,6 @@ const searchBooks = async (query) => {
     }
 
     const data = await response.json();
-    // console.log('Search results from API:', data);
     return data;
   } catch (error) {
     console.error('Failed to search books: ', error);
@@ -82,12 +77,14 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
       try {
         const updatedBooks = await fetchBookImages(books);
         setBooksWithImages(updatedBooks);
+        console.log(booksWithImages);
         // console.log('Loaded books with images:', updatedBooks);
       } catch (error) {
         console.error('Failed to load books with images: ', error);
       }
     };
     loadBooks();
+    console.log(books);
   }, [books]);
 
   useEffect(() => {
@@ -112,7 +109,7 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
     const grouped = groupBooksByCategory(filteredBooks);
     setGroupedBooks(grouped);
   }, [filteredBooks]);
-  
+
   return (
     <View style={styles.container}>
       <SearchInput search={search} handleSearch={handleSearch} />

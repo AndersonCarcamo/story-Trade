@@ -20,11 +20,11 @@ export function TabNavigator() {
           if (route.name === 'Home') {
             iconName = 'home-outline';
           } else if (route.name === 'Profile') {
-            iconName = 'person';
+            iconName = 'person-';
           } else if (route.name === 'AddBook') {
-            iconName = 'book';
+            iconName = 'ios-book';
           } else if (route.name === 'AddGenre') {
-            iconName = 'list';
+            iconName = 'ios-list';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -32,7 +32,7 @@ export function TabNavigator() {
       })}
       tabBarOptions={{
         activeTintColor: 'tomato',
-        inactiveTintColor: 'gray',
+        inactiveTintColor: 'gray',  
       }}
     >
       <Tab.Screen name="Home" component={Home} options={{ headerShown: false }}/>

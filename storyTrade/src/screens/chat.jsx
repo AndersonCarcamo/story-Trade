@@ -41,6 +41,7 @@ const Chat = ({ navigation, route }) => {
 
     const confirmDelivery = async () => {
         try {
+            console.log(`user_id: ${userId}, book_id: ${bookId}, rating: ${ratingExchange}`)
           const transactionResponse = await axios.post('http://127.0.0.1:5000/transactions', {
             user_id: userId,
             book_id: bookId,
