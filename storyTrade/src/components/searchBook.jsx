@@ -7,7 +7,7 @@ import defaultImage from '../assets/default_image.jpg'
 import SearchInput from './searchInput';
 
 const groupBooksByCategory = (books) => {
-  console.log('Grouping books by category:', books);
+  // console.log('Grouping books by category:', books);
   const groupedBooks = books.reduce((acc, book) => {
     const category = book.book_info && book.book_info.category ? book.book_info.category : (book.category ? book.category : 'Unknown');
     if (!acc[category]) {
@@ -17,7 +17,7 @@ const groupBooksByCategory = (books) => {
     return acc;
   }, {});
 
-  console.log('Result of groupBooksByCategory function:', groupedBooks);
+  // console.log('Result of groupBooksByCategory function:', groupedBooks);
   return groupedBooks;
 };
 
@@ -32,7 +32,7 @@ const fetchBookImages = async (books) => {
       } else {
         try {
           const imageUrl = `http://localhost:3000/get?mediaType=images&fileName=${imageFileName}`;
-          console.log(`Fetching image from: ${imageUrl}`); // Debugging line
+          // console.log(`Fetching image from: ${imageUrl}`); // Debugging line
           const response = await fetch(imageUrl);
           if (response.ok) {
             book.imageUri = response.url;
@@ -64,7 +64,7 @@ const searchBooks = async (query) => {
     }
 
     const data = await response.json();
-    console.log('Search results from API:', data);
+    // console.log('Search results from API:', data);
     return data;
   } catch (error) {
     console.error('Failed to search books: ', error);
@@ -82,7 +82,7 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
       try {
         const updatedBooks = await fetchBookImages(books);
         setBooksWithImages(updatedBooks);
-        console.log('Loaded books with images:', updatedBooks);
+        // console.log('Loaded books with images:', updatedBooks);
       } catch (error) {
         console.error('Failed to load books with images: ', error);
       }
@@ -95,18 +95,14 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
       if (search) {
         try {
           const results = await searchBooks(search);
-          console.log('Search results:', results);
           const updatedResults = await fetchBookImages(results);
-          console.log('Updated results with images:', updatedResults);
           setFilteredBooks(updatedResults);
-          console.log('datos guardado en filteredbook', filteredBooks);
         } catch (error) {
           console.error('Failed to perform search: ', error);
           // Alert.alert('Error', 'Failed to perform search.');
         }
       } else {
         setFilteredBooks(booksWithImages);
-        console.log('Using books with images for display:', booksWithImages);
       }
     };
     performSearch();
@@ -115,13 +111,8 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
   useEffect(() => {
     const grouped = groupBooksByCategory(filteredBooks);
     setGroupedBooks(grouped);
-    console.log('Grouped books:', grouped);
   }, [filteredBooks]);
-
-  // console.log('datos filtrados sin busqueda', filteredBooks);
-  // const groupedBooks = groupBooksByCategory(filteredBooks);
-  // console.log('Grouped books final:', groupedBooks);
-
+  
   return (
     <View style={styles.container}>
       <SearchInput search={search} handleSearch={handleSearch} />

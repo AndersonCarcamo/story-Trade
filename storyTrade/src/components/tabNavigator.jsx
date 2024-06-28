@@ -18,13 +18,13 @@ export function TabNavigator() {
           let iconName;
 
           if (route.name === 'Home') {
-            iconName = 'ios-home';
+            iconName = 'home-outline';
           } else if (route.name === 'Profile') {
-            iconName = 'ios-person';
+            iconName = 'person';
           } else if (route.name === 'AddBook') {
-            iconName = 'ios-book';
+            iconName = 'book';
           } else if (route.name === 'AddGenre') {
-            iconName = 'ios-list';
+            iconName = 'list';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
