@@ -12,22 +12,22 @@ const LoginScreen = ({ navigation }) => {
       
       console.log('Intentando iniciar sesión con:', email, password);
       
-      const response = await axios.post('http://10.0.2.2:5000/login', {
+      const response = await axios.post('http://127.0.0.1:5000/login', {
         email,
         password,
       });
-      console.log('respondio');
+      console.log('Respuesta del servidor:', response.data);
       if (response.status === 200){
         const user = response.data;
         await AsyncStorage.setItem('userToken', user.id.toString());
         await AsyncStorage.setItem('userId', user.id.toString());
-        navigation.navigate('Profile', { userId: user.id });
+        // navigation.navigate('Profile', { userId: user.id });
+        navigation.navigate('Home');
       } else {
         Alert.alert('Error', 'Error en las credenciales');
       }
     } catch (error) {
-      console.log('No respondio')
-      console.error(error);
+      console.log('Error al intentar iniciar sesión:', error);
       Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
     }
   }

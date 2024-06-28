@@ -4,8 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Import your screens here
 import UserProfile from '../screens/profile';
-import AddBook from '../screens/AddBook';
+import AddBook from '../screens/addBook';
 import AddGenre from '../screens/AddGenre';
+import Home from '../screens/home';
 
 const Tab = createBottomTabNavigator();
 
@@ -16,7 +17,9 @@ export function TabNavigator() {
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
-          if (route.name === 'Profile') {
+          if (route.name === 'Home') {
+            iconName = 'ios-home';
+          } else if (route.name === 'Profile') {
             iconName = 'ios-person';
           } else if (route.name === 'AddBook') {
             iconName = 'ios-book';
@@ -32,6 +35,7 @@ export function TabNavigator() {
         inactiveTintColor: 'gray',
       }}
     >
+      <Tab.Screen name="Home" component={Home} options={{ headerShown: false }}/>
       <Tab.Screen name="Profile" component={UserProfile} />
       <Tab.Screen name="AddBook" component={AddBook} />
       <Tab.Screen name="AddGenre" component={AddGenre} />

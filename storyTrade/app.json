@@ -1,27 +1,35 @@
 {
   "expo": {
+    "plugins": ["@react-native-google-signin/google-signin"],
     "name": "storyTrade",
     "slug": "storyTrade",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./src/assets/logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./src/assets/logo_blanco.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffbd59"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./src/assets/logo_blanco.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.annderson23.storyTrade",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./src/assets/logo_blanco.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8585a3f1-8ce0-41a8-b9bd-9aa34ba5e988"
+      }
     }
   }
 }
