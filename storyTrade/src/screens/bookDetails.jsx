@@ -4,6 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import SearchInput from '../components/searchInput';
 import defaultImage from '../assets/default_image.jpg';
 import { Video } from 'expo-av';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const fetchImage = async (imageName) => {
   try {
@@ -63,27 +64,61 @@ const fetchVideoUrl = async (videoName) => {
   }
 };
 
-const likeBook = async (bookId) => {
+const likeBook = async (bookId, userId) => {
   try {
-      const response = await fetch(`http://localhost:5000/like/${bookId}`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json'
-          }
-      });
-      if (!response.ok) {
-          throw new Error('Network response was not ok');
-      }
-      // FlashMessage({
-      //     message: 'Libro agregado a favoritos!',
-      //     type: 'success',
-      // });
+    const likerId = await AsyncStorage.getItem('userId');
+    if (!likerId) {
+      console.error('Liker ID is not available in AsyncStorage');
+      return;
+    }
+
+    const response = await fetch(`http://localhost:5000/like/${bookId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        liker_id: likerId  // Usar el id del usuario desde AsyncStorage
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.description || 'Network response was not ok');
+    }
+    console.log('Libro agregado a favoritos!');
   } catch (error) {
-      console.error('Failed to like book: ', error);
-      // FlashMessage({
-      //     message: 'Error al agregar a favoritos.',
-      //     type: 'danger',
-      // });
+    console.error('Failed to like book: ', error.message);
+  }
+};
+
+const unlikeBook = async (bookId, userId) => {
+  try {
+    const likerId = await AsyncStorage.getItem('userId');
+    if (!likerId) {
+      console.error('Liker ID is not available in AsyncStorage');
+      return;
+    }
+
+    const response = await fetch(`http://localhost:5000/unlike/${bookId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        liker_id: likerId
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.description || 'Network response was not ok');
+    }
+    console.log('Like removed!');
+  } catch (error) {
+    console.error('Failed to unlike book: ', error.message);
   }
 };
 
@@ -93,6 +128,7 @@ const BookDetails = ({ book, goBack }) => {
   const [userAvatar, setUserAvatar] = useState(defaultImage);
   const [isModalVisible, setModalVisible] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
+  const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(() => {
     const loadBookImage = async () => {
@@ -116,9 +152,26 @@ const BookDetails = ({ book, goBack }) => {
       }
     };
 
+    const checkIfLiked = async () => {
+      const likerId = await AsyncStorage.getItem('userId');
+      const response = await fetch(`http://localhost:5000/like/${book.id}/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: book.user_id,
+          liker_id: likerId
+        })
+      });
+      const data = await response.json();
+      setHasLiked(data.hasLiked);
+    };
+
     loadBookImage();
     loadUserInfo();
     loadVideo();
+    checkIfLiked();
   }, [book]);
 
   const openModal = () => {
@@ -128,6 +181,16 @@ const BookDetails = ({ book, goBack }) => {
   const closeModal = () => {
     setModalVisible(false);
   };
+
+  const handleLike = async () => {
+    if (hasLiked) {
+      await unlikeBook(book.id, book.user_id);
+    } else {
+      await likeBook(book.id, book.user_id);
+    }
+    setHasLiked(!hasLiked);
+  };
+
 
   return (
     <View style={styles.container}>
@@ -193,8 +256,8 @@ const BookDetails = ({ book, goBack }) => {
               />
             )}
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.likeButton} onPress={() => likeBook(book.id)}>
-                  <FontAwesome name="heart" size={24} color="#FF0000" />
+              <TouchableOpacity style={styles.likeButton} onPress={handleLike}>
+                <FontAwesome name="heart" size={24} color={hasLiked ? "#FF0000" : "#DDD"} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.viewProfileButton}>
                   <Text style={styles.viewProfileText}>Ver Perfil</Text>
