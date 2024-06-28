@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Import your screens here
 import UserProfile from '../screens/profile';
-import AddBook from '../screens/AddBook';
+import AddBook from '../screens/addBook';
 import AddGenre from '../screens/AddGenre';
 
 const Tab = createBottomTabNavigator();

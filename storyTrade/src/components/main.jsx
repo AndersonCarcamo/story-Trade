@@ -9,7 +9,7 @@ import RegisterScreen from "../screens/register";
 import CompleteProfile from "../screens/completeProfile";
 import UserProfile from "../screens/profile";
 
-import AddBook from '../screens/AddBook';
+import AddBook from '../screens/addBook';
 import AddGenre from '../screens/AddGenre';
 import { TabNavigator } from './tabNavigator';
 
@@ -45,7 +45,6 @@ export function Main() {
         <Stack.Screen name="Complete Profile" component={CompleteProfile}/>
         <Stack.Screen name="Profile" component={UserProfile}/>
         <Stack.Screen name="AddBook" component={AddBook}/>
-        <Stack.Screen name="AddGenre" component={AddGenre}/>
         {/*<Stack.Screen name="Home" component={Home}/>*/}
       </Stack.Navigator>
     </NavigationContainer>

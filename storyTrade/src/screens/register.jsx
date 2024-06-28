@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, Button } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as Font from 'expo-font';
+import * as ImagePicker from 'expo-image-picker';
 
 const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -13,6 +14,53 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  const [imageSource, setImageSource] = useState(null);
+
+  const selectImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        alert('Permission to access camera roll is required!');
+        return;
+      }
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!pickerResult.cancelled) {
+        setImageSource({ uri: pickerResult.uri });
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+    }
+  };
+
+  const uploadImage = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('image', {
+        uri: imageSource.uri,
+        type: 'image/jpeg',
+        name: 'photo.jpg',
+      });
+
+      const response = await axios.post('https://tu-api.com/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      Alert.alert('Success', 'Image uploaded successfully!');
+      console.log('Image upload response:', response.data);
+    } catch (error) {
+      console.error('Image upload error:', error);
+      Alert.alert('Error', 'Failed to upload image.');
+    }
+  };
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -142,6 +190,9 @@ const RegisterScreen = ({ navigation }) => {
               />
               <Icon name="eye-off" size={20} color="#aaa" />
             </View>
+            <View style={styles.media_section}>
+              <Button title="Select Image" onPress={selectImage} style={styles.upload_Media}/>
+            </View>
           </View>
         </ScrollView>
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
@@ -229,6 +280,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#fff',
     fontWeight: 'bold',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  media_section: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  upload_Media: {
+    borderRadius: 20,
   },
 });
 

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+/*import React, { useState } from 'react';
 import { View, Text, Button, Alert, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const genres = ['Romance', 'Fantasía', 'Terror', 'Policial', 'Ciencia Ficción'];
 
@@ -36,6 +37,9 @@ const AddGenre = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton}  onPress={() => navigation.navigate('Profile', { userId })}>
+        <Icon name="arrow-back" size={30} color="#fff" />
+      </TouchableOpacity>
       <Text style={styles.title}>Agregar Género</Text>
       <FlatList
         data={genres}
@@ -98,3 +102,4 @@ const styles = StyleSheet.create({
 });
 
 export default AddGenre;
+*/
