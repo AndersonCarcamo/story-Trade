@@ -55,7 +55,7 @@ const ChatList = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      <View style={styles.footer}>
+      {/* <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Home')}>
           <FontAwesome name="home" size={24} color="#FFA500" />
           <Text style={styles.footerButtonText}>Home</Text>
@@ -72,7 +72,7 @@ const ChatList = ({ navigation }) => {
           <FontAwesome name="tags" size={24} color="#666" />
           <Text style={styles.footerButtonText}>Add Genre</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };

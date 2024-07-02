@@ -19,6 +19,7 @@ import BookDetails from '../screens/bookDetails';
 import ChatList from '../screens/chatsList';
 import PaymentOptions from '../screens/vista_pagos';
 import Chat from '../screens/chat';
+import Settings from '../screens/settings';
  
 const Stack = createStackNavigator();
 
@@ -50,11 +51,12 @@ export function Main() {
         <Stack.Screen name="Profile" component={UserProfile}/>
         <Stack.Screen name="AddBook" component={AddBook}/>
         <Stack.Screen name="AddGenre" component={AddGenre}/>
-        <Stack.Screen name="SearchBook" component={SearchBook}/>
-        <Stack.Screen name="BookDetails" component={BookDetails}/>
-        <Stack.Screen name="ChatList" component={ChatList}/>
-        <Stack.Screen name="Pagos" component={PaymentOptions}/>
-        <Stack.Screen name="Chat" component={Chat}/>
+        {/* <Stack.Screen name="SearchBook" component={SearchBook} options={{ headerShown: false }}/> */}
+        <Stack.Screen name="BookDetails" component={BookDetails} options={{ headerShown: false }}/>
+        <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
+        {/* <Stack.Screen name="ChatList" component={ChatList} options={{ headerShown: false }}/> */}
+        <Stack.Screen name="Pagos" component={PaymentOptions} options={{ headerShown: false }}/>
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

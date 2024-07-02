@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Import your screens here
 import UserProfile from '../screens/profile';
-import AddBook from '../screens/addBook';
-import AddGenre from '../screens/AddGenre';
+import ChatList from '../screens/chatsList';
+import Settings from '../screens/settings';
 import Home from '../screens/home';
 
 const Tab = createBottomTabNavigator();
@@ -20,25 +20,32 @@ export function TabNavigator() {
           if (route.name === 'Home') {
             iconName = 'home-outline';
           } else if (route.name === 'Profile') {
-            iconName = 'person-';
-          } else if (route.name === 'AddBook') {
-            iconName = 'ios-book';
-          } else if (route.name === 'AddGenre') {
-            iconName = 'ios-list';
+            iconName = 'person-outline';
+          } else if (route.name === 'ChatList') {
+            iconName = 'chatbubbles-outline';
+          } else if (route.name === 'Settings') {
+            iconName = 'settings-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
+        tabBarActiveTintColor: 'white',
+        tabBarInactiveTintColor: 'gray',
+        tabBarStyle: {
+          display: 'flex',
+          backgroundColor: '#FFBD59',
+          borderTopWidth: 1,
+          borderTopColor: '#ccc',
+          paddingVertical: 10,
+          paddingBottom: 10,
+          height: 60,
+        }
       })}
-      tabBarOptions={{
-        activeTintColor: 'tomato',
-        inactiveTintColor: 'gray',  
-      }}
     >
       <Tab.Screen name="Home" component={Home} options={{ headerShown: false }}/>
-      <Tab.Screen name="Profile" component={UserProfile} />
-      <Tab.Screen name="AddBook" component={AddBook} />
-      <Tab.Screen name="AddGenre" component={AddGenre} />
+      <Tab.Screen name="Profile" component={UserProfile} options={{ headerShown: false }} />
+      <Tab.Screen name="ChatList" component={ChatList} options={{ headerShown: false }} />
+      <Tab.Screen name="Settings" component={Settings} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 }

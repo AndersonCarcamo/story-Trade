@@ -6,6 +6,26 @@ from sqlalchemy import func
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+# @app.route('/search', methods=['GET'])
+# def search_books():
+#     query = request.args.get('query')
+#     if not query:
+#         abort(400, description="Query parameter is required")
+
+#     try:
+#         # Crear el vector de búsqueda utilizando to_tsquery con unaccent
+#         search_vector = func.to_tsquery('spanish', func.replace(func.unaccent(query), ' ', '&') + ':*')
+#         results = (
+#             db.session.query(BookInfo)
+#             .join(Book, Book.book_info_id == BookInfo.id)
+#             .filter(BookInfo.tsvector.op('@@')(search_vector))
+#             .all()
+#         )
+#         return jsonify([book_info.as_dict() for book_info in results])
+#     except Exception as e:
+#         print(f"Error during search: {e}")
+#         abort(500, description="Internal Server Error")
+
 @app.route('/search', methods=['GET'])
 def search_books():
     query = request.args.get('query')
@@ -16,12 +36,21 @@ def search_books():
         # Crear el vector de búsqueda utilizando to_tsquery con unaccent
         search_vector = func.to_tsquery('spanish', func.replace(func.unaccent(query), ' ', '&') + ':*')
         results = (
-            db.session.query(BookInfo)
-            .join(Book, Book.book_info_id == BookInfo.id)
+            db.session.query(Book)
+            .join(BookInfo, Book.book_info_id == BookInfo.id)
             .filter(BookInfo.tsvector.op('@@')(search_vector))
             .all()
         )
-        return jsonify([book_info.as_dict() for book_info in results])
+        return jsonify([{
+            "antiquity": book.antiquity,
+            "book_info": book.book_info.as_dict(),
+            "book_info_id": book.book_info_id,
+            "editorial": book.editorial,
+            "id": book.id,
+            "imageUri": f"http://localhost:3000/get?mediaType=images&fileName={book.book_info.image}" if book.book_info.image else None,
+            "user_id": book.user_id,
+            "video": book.video
+        } for book in results])
     except Exception as e:
         print(f"Error during search: {e}")
         abort(500, description="Internal Server Error")
@@ -353,18 +382,31 @@ def get_payment_options():
 def create_transaction():
     if not request.json or not 'user_id' in request.json or not 'book_id' in request.json:
         abort(400)
+    
+    user_id = request.json['user_id']
+    book_id = request.json['book_id']
+    
+    # Verificar existencia del usuario
+    user = db.session.get(User, user_id)
+    if user is None:
+        abort(400, description="User does not exist")
+    
+    # Verificar existencia del libro
+    book = db.session.get(Book, book_id)
+    if book is None:
+        abort(400, description="Book does not exist")
+    
     transaction = Transaction(
-        user_id=request.json['user_id'],
-        book_id=request.json['book_id'],
+        user_id=user_id,
+        book_id=book_id,
         rating=request.json.get('rating', 0.0)
     )
     try:
         db.session.add(transaction)
         db.session.commit()
         # Actualizar el rating del usuario
-        user = User.query.get(transaction.user_id)
         if user:
-            user.transaction_rating = (user.transaction_rating * user.exchanges + transaction.rating) / (user.exchanges + 1)
+            user.rating = (user.rating * user.exchanges + transaction.rating) / (user.exchanges + 1)
             user.exchanges += 1
             db.session.commit()
     except Exception as e:
