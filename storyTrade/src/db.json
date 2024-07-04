@@ -1,0 +1,39 @@
+{
+    "users": [
+      {
+        "id": 1,
+        "name": "Juan Pérez",
+        "email": "juan.perez@example.com",
+        "password": "password123",
+        "genres": ["Romance", "Ciencia Ficción"],
+        "books": [
+          {
+            "title": "El amor en los tiempos del cólera",
+            "author": "Gabriel García Márquez"
+          },
+          {
+            "title": "Dune",
+            "author": "Frank Herbert"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "María López",
+        "email": "maria.lopez@example.com",
+        "password": "password456",
+        "genres": ["Terror", "Fantasía"],
+        "books": [
+          {
+            "title": "It",
+            "author": "Stephen King"
+          },
+          {
+            "title": "El nombre del viento",
+            "author": "Patrick Rothfuss"
+          }
+        ]
+      }
+    ]
+  }
+  
