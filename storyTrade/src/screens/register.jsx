@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, Button } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, Button, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -137,6 +137,7 @@ const RegisterScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
             <Icon name="arrow-back" size={30} color="#fff" />
           </TouchableOpacity>
+          <Image source={require('../assets/logo_blanco.png')} style={styles.header_image}/>
           <Text style={styles.headerText}>CREA TU CUENTA</Text>
         </View>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#ffbd59',
-    height: 150,
+    height: 250,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -234,6 +235,11 @@ const styles = StyleSheet.create({
     textShadowColor: '#949494',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 10,
+  },
+  header_image: {
+    height: 100,
+    width: 130,
+    marginBottom: 10,
   },
   scrollContainer: {
     flexGrow: 1,
