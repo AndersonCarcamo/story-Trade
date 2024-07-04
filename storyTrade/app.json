@@ -1,8 +1,7 @@
 {
   "expo": {
     "plugins": [
-      "@react-native-google-signin/google-signin",
-      "expo-video"
+      "@react-native-google-signin/google-signin"
     ],
     "name": "storyTrade",
     "slug": "storyTrade",
@@ -16,7 +15,8 @@
       "backgroundColor": "#ffbd59"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.annderson23.storyTrade"
     },
     "android": {
       "adaptiveIcon": {

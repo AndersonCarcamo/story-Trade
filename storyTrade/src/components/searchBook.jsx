@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import axios from 'axios';
 
 import defaultImage from '../assets/default_image.jpg'
 import SearchInput from './searchInput';
@@ -18,7 +18,6 @@ const groupBooksByCategory = (books) => {
   return groupedBooks;
 };
 
-// conexion con la api de media para obtener la imagen del libro
 const fetchBookImages = async (books) => {
   const updatedBooks = await Promise.all(
     books.map(async (book) => {
@@ -27,11 +26,16 @@ const fetchBookImages = async (books) => {
         book.imageUri = defaultImage;
       } else {
         try {
-          const imageUrl = `http://localhost:3000/get?mediaType=images&fileName=${imageFileName}`;
-          // console.log(`Fetching image from: ${imageUrl}`); // Debugging line
-          const response = await fetch(imageUrl);
-          if (response.ok) {
-            book.imageUri = response.url;
+          const fileName = `images/${imageFileName}`;  // Assuming all images are stored under 'images' directory
+          const response = await axios.get('https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get', {
+            params: {
+              fileName: fileName,
+            },
+          });
+
+          if (response.status === 200) {
+            const imageUrl = `data:${response.headers['content-type']};base64,${response.data}`;
+            book.imageUri = imageUrl;
           } else {
             book.imageUri = defaultImage;
           }
@@ -51,7 +55,7 @@ const searchBooks = async (query) => {
     const response = await fetch(`http://localhost:5000/search?query=${query}`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       }
     });
 

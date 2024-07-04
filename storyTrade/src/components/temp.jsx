@@ -1,130 +1,108 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { FontAwesome } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { View, Text, Button, StyleSheet, Alert, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import axios from 'axios';
+import ImageResizer from 'react-native-image-resizer';
+import { ProcessingManager } from 'react-native-video-processing';
 
-import defaultImage from '../assets/default_image.jpg';
-import SearchInput from './searchInput';
+const Settings = () => {
+  const navigation = useNavigation();
+  const [imageUrl, setImageUrl] = useState(null);
 
-const groupBooksByCategory = (books) => {
-  const groupedBooks = books.reduce((acc, book) => {
-    const category = book.book_info && book.book_info.category ? book.book_info.category : 'Unknown';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(book);
-    return acc;
-  }, {});
-  return groupedBooks;
-};
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('userToken');
+    navigation.replace('Login');
+  };
 
-// conexión con la API de media para obtener la imagen del libro
-const fetchBookImages = async (books) => {
-  const updatedBooks = await Promise.all(
-    books.map(async (book) => {
-      const imageFileName = book.book_info?.image;
-      if (!imageFileName) {
-        book.imageUri = defaultImage;
-      } else {
+  const uploadFile = async (mediaType) => {
+    const options = {
+      mediaType: mediaType,
+      includeBase64: true,
+    };
+
+    launchImageLibrary(options, async (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.assets && response.assets.length > 0) {
+        const file = response.assets[0];
+
         try {
-          const imageUrl = `http://localhost:3000/get?mediaType=images&fileName=${imageFileName}`;
-          const response = await fetch(imageUrl);
-          if (response.ok) {
-            book.imageUri = response.url;
-          } else {
-            book.imageUri = defaultImage;
-          }
-        } catch (error) {
-          console.error(`Failed to fetch image for book ${book.book_info?.title}: `, error);
-          book.imageUri = defaultImage;
-        }
-      }
-      return book;
-    })
-  );
-  return updatedBooks;
-};
+          let resizedFile;
 
-const searchBooks = async (query) => {
-  try {
-    const response = await fetch(`http://localhost:5000/search?query=${query}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
+          if (mediaType === 'photo') {
+            resizedFile = await ImageResizer.createResizedImage(file.uri, 800, 600, 'JPEG', 80);
+          } else if (mediaType === 'video') {
+            const options = {
+              width: 640,
+              height: 480,
+              bitrateMultiplier: 3,
+              saveToCameraRoll: true, // guardar el video comprimido en el rollo de la cámara
+            };
+            const processedVideo = await ProcessingManager.compress(file.uri, options);
+            resizedFile = processedVideo;
+          }
+
+          const fileName = `${mediaType}/${file.fileName}`;
+          const url = `https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/upload`;
+          const uploadResponse = await axios.post(url, {
+            fileName: fileName,
+            fileContent: resizedFile.data,
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          Alert.alert('Éxito', `Archivo subido con éxito: ${uploadResponse.data.message}`);
+        } catch (error) {
+          console.log('Error al subir el archivo:', error);
+          Alert.alert('Error', 'No se pudo subir el archivo');
+        }
       }
     });
+  };
 
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+  const fetchImage = async () => {
+    try {
+      console.log('entra a fetchear');
+      const response = await axios.get('https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get', {
+        params: {
+          fileName: 'images/book12.jpg',
+        },
+      });
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Failed to search books: ', error);
-    throw error;
-  }
-};
-
-const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
-  const [booksWithImages, setBooksWithImages] = useState([]);
-  const [filteredBooks, setFilteredBooks] = useState([]);
-  const [groupedBooks, setGroupedBooks] = useState({});
-
-  useEffect(() => {
-    const loadBooks = async () => {
-      try {
-        const updatedBooks = await fetchBookImages(books);
-        setBooksWithImages(updatedBooks);
-      } catch (error) {
-        console.error('Failed to load books with images: ', error);
-      }
-    };
-    loadBooks();
-  }, [books]);
-
-  useEffect(() => {
-    const performSearch = async () => {
-      if (search) {
-        try {
-          const results = await searchBooks(search);
-          const updatedResults = await fetchBookImages(results);
-          setFilteredBooks(updatedResults);
-        } catch (error) {
-          console.error('Failed to perform search: ', error);
-        }
+      console.log(response);
+      if (response.data) {
+        const imageUrl = `data:${response.headers['content-type']};base64,${response.data}`;
+        setImageUrl(imageUrl);
+        Alert.alert('Éxito', 'Imagen obtenida con éxito');
       } else {
-        setFilteredBooks(booksWithImages);
+        Alert.alert('Error', 'No se pudo obtener la imagen');
       }
-    };
-    performSearch();
-  }, [search, booksWithImages]);
-
-  useEffect(() => {
-    const grouped = groupBooksByCategory(filteredBooks);
-    setGroupedBooks(grouped);
-  }, [filteredBooks]);
+    } catch (error) {
+      console.error('Error al obtener la URL de la imagen:', error);
+      Alert.alert('Error', 'No se pudo obtener la URL de la imagen');
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <SearchInput search={search} handleSearch={handleSearch} />
-      <ScrollView>
-        {Object.keys(groupedBooks).map((category) => (
-          <View key={category} style={styles.categoryContainer}>
-            <Text style={styles.categoryTitle}>{category}</Text>
-            <View style={styles.bookRow}>
-              {groupedBooks[category].map((book) => (
-                <TouchableOpacity key={book.id} onPress={() => viewDetails(book)}>
-                  <Image source={{ uri: book.imageUri || defaultImage }} style={styles.bookImage} />
-                </TouchableOpacity>
-              ))}
-              <TouchableOpacity style={styles.addBookButton}>
-                <FontAwesome name="plus" size={24} color="black" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+      <Button title="Edit Profile" onPress={() => navigation.navigate('Complete Profile')} />
+      <Button title="Change Password" onPress={() => navigation.navigate('ChangePassword')} />
+      <Button title="Logout" onPress={handleLogout} color="red" />
+      <Button title="Subir Imagen" onPress={() => uploadFile('photo')} />
+      <Button title="Subir Video" onPress={() => uploadFile('video')} />
+      <Button title="Obtener Imagen" onPress={fetchImage} />
+      {imageUrl && (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+        />
+      )}
     </View>
   );
 };
@@ -132,46 +110,14 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  categoryContainer: {
-    marginBottom: 16,
-  },
-  categoryTitle: {
-    fontFamily: 'Typewriter-Bold',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginHorizontal: 16,
-    marginVertical: 8,
-  },
-  bookRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-  },
-  bookImage: {
-    width: 80,
-    height: 120,
-    marginRight: 10,
-  },
-  addBookButton: {
-    width: 80,
-    height: 120,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
   },
-  bookTitle: {
-    fontFamily: 'Typewriter-Bold',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  bookAuthor: {
-    fontFamily: 'Typewriter-Bold',
-    fontSize: 14,
-    color: '#555',
+  image: {
+    width: 200,
+    height: 200,
+    marginTop: 20,
   },
 });
 
-export default SearchBook;
+export default Settings;
