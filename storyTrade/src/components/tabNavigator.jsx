@@ -7,6 +7,8 @@ import UserProfile from '../screens/profile';
 import ChatList from '../screens/chatsList';
 import Settings from '../screens/settings';
 import Home from '../screens/home';
+import AddBook from '../screens/addBook';
+import AddGenre from '../screens/AddGenre';
 
 const Tab = createBottomTabNavigator();
 

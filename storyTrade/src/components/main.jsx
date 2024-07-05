@@ -56,7 +56,6 @@ export function Main() {
         <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
         {/* <Stack.Screen name="ChatList" component={ChatList} options={{ headerShown: false }}/> */}
         <Stack.Screen name="Pagos" component={PaymentOptions} options={{ headerShown: false }}/>
-        
       </Stack.Navigator>
     </NavigationContainer>
   );
