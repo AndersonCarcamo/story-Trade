@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvo
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +40,6 @@ const LoginScreen = ({ navigation }) => {
     >
       <ScrollView contentContainerStyle={login_styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <Image source={require('../assets/logo.png')} style={login_styles.logo} />
-        {/*<Text style={login_styles.subtitle}>¡Compra, vende e intercambia!</Text>*/}
         <View style={login_styles.yellowSquare} />
         <View style={login_styles.square}>
           <TextInput

@@ -97,7 +97,7 @@ const UserProfile = ({ route, navigation }) => {
     const fetchUser = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        const response = await axios.get(`http://127.0.0.1::5000/users/${userId}`, {
+        const response = await axios.get(`http://127.0.0.1:5000/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

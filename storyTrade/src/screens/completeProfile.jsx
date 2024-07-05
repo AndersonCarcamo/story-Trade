@@ -46,7 +46,7 @@ const CompleteProfile = ({ navigation }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Register')}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('settings')}>
             <Icon name="arrow-back" size={30} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerText}>COMPLETA TU PERFIL</Text>

@@ -1,21 +1,15 @@
-// App.js
-// import React, { useState } from 'react';
-// import { View, StyleSheet } from 'react-native';
-// import { SafeAreaView } from 'react-native-safe-area-context';
-
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Alert } from 'react-native';
 import * as Font from 'expo-font';
 import * as FileSystem from 'expo-file-system';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../components/headerH';
-// import Content from './searchBook';
+
 import Footer from '../components/footerH';
 import Menu from './navH';
 import SearchBook from '../components/searchBook';
 import BookDetails from './bookDetails';
 
-// import booksData from '../assets/jsons/books.json';
 
 const fetchBooks = async () => {
   try {
@@ -64,54 +58,22 @@ const Home = () => {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
   const closeMenu = () => {
       setIsMenuOpen(false);
   };
-
   const handleSearch = (text) => {
       setSearch(text);
   };
-
-
-  
   const viewDetails = (book) => {
-    // let normalizedBook = book;
-
-    // if (!book.book_info) {
-    //   console.log('entra aqui')
-    //   normalizedBook = {
-    //     book_info: {
-    //       author: book.author,
-    //       category: book.category,
-    //       description: book.description,
-    //       id: book.id,
-    //       image: book.image,
-    //       rating: book.rating,
-    //       release_year: book.release_year,
-    //       title: book.title
-    //     },
-    //     antiquity: book.antiquity,
-    //     book_info_id: book.id,
-    //     editorial: book.editorial,
-    //     id: book.id,
-    //     imageUri: book.imageUri,
-    //     user_id: book.user_id,
-    //     video: book.video
-    //   };
-    // }
-    // console.log('book_Info: ', normalizedBook);
-    // setSelectedBook(normalizedBook);
     console.log('book_Info: ', book);
     setSelectedBook(book);
   };
-
   const goBack = () => {
       setSelectedBook(null);
   };
 
   if (!fontsLoaded) {
-    return null; // or some kind of loading spinner
+    return null;
   }
 
   return (
@@ -128,7 +90,6 @@ const Home = () => {
             viewDetails={viewDetails}
             />
         )}
-        {/* <Footer /> */}
     </SafeAreaView>
 );
 };

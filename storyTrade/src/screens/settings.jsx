@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import axios from 'axios';
 
-const Settings = () => {
+const Settings = ({ navigate }) => {
   const navigation = useNavigation();
   const [imageUrl, setImageUrl] = useState(null);
   const [customFileName, setCustomFileName] = useState('');

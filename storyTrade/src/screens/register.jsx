@@ -112,7 +112,8 @@ const RegisterScreen = ({ navigation }) => {
         const user = response.data;
         await AsyncStorage.setItem('userToken', user.id.toString());
         await AsyncStorage.setItem('userId', user.id.toString());
-        navigation.navigate('Profile', { userId: user.id });
+        // navigation.navigate('Profile', { userId: user.id });
+        navigation.navigate('Home');
       } else {
         Alert.alert('Error', 'Error en las credenciales');
       }

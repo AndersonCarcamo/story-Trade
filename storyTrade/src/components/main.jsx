@@ -10,7 +10,7 @@ import CompleteProfile from "../screens/completeProfile";
 import UserProfile from "../screens/profile";
 
 import AddBook from '../screens/addBook';
-import AddGenre from '../screens/AddGenre';
+import AddGenre from '../screens/addGenre';
 import { TabNavigator } from './tabNavigator';
 
 import Home from '../screens/home';
@@ -50,7 +50,7 @@ export function Main() {
         <Stack.Screen name="Complete Profile" component={CompleteProfile}/>
         <Stack.Screen name="Profile" component={UserProfile}/>
         <Stack.Screen name="AddBook" component={AddBook}/>
-        <Stack.Screen name="AddGenre" component={AddGenre}/>
+        {/*<Stack.Screen name="AddGenre" component={AddGenre}/>*/}
         {/* <Stack.Screen name="SearchBook" component={SearchBook} options={{ headerShown: false }}/> */}
         <Stack.Screen name="BookDetails" component={BookDetails} options={{ headerShown: false }}/>
         <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
