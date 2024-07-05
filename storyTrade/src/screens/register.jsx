@@ -1,118 +1,305 @@
-import React, { useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, Button, Image } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import * as Font from 'expo-font';
+import * as ImagePicker from 'expo-image-picker';
 
-const RegisterSceen = ({ navigation }) => {
-    useEffect(() => {
-        const loadFonts = async () => {
-          await Font.loadAsync({
-            'Typewriter-Bold': require('../assets/Fonts/TrueTypewriter/Typewriter-Bold.ttf')
-          });
-        };
-    
-        loadFonts();
-      }, []);
-    
-    return (
-      <View style={styles.register}>
-        <View style={styles.title}>
-            <Text style={styles.title_text}>CREA TU CUENTA</Text>
+const RegisterScreen = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  const [imageSource, setImageSource] = useState(null);
+
+  const selectImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        alert('Permission to access camera roll is required!');
+        return;
+      }
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!pickerResult.cancelled) {
+        setImageSource({ uri: pickerResult.uri });
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+    }
+  };
+
+  const uploadImage = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('image', {
+        uri: imageSource.uri,
+        type: 'image/jpeg',
+        name: 'photo.jpg',
+      });
+
+      const response = await axios.post('https://tu-api.com/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      Alert.alert('Success', 'Image uploaded successfully!');
+      console.log('Image upload response:', response.data);
+    } catch (error) {
+      console.error('Image upload error:', error);
+      Alert.alert('Error', 'Failed to upload image.');
+    }
+  };
+
+  useEffect(() => {
+    const loadFonts = async () => {
+      await Font.loadAsync({
+        'Typewriter-Bold': require('../assets/Fonts/TrueTypewriter/Typewriter-Bold.ttf')
+      });
+      setFontsLoaded(true);
+    };
+
+    loadFonts();
+  }, []);
+
+  const handleRegister = async () => {
+    if (password !== passwordConfirm) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+    try {
+      const response = await axios.post(`http://10.0.2.2:5000/users`, {
+        email,
+        nombre,
+        username,
+        password,
+      });
+
+      if (response.status === 201) {
+        // Añadir un pequeño retardo antes de intentar iniciar sesión
+        setTimeout(() => {
+          handleLogin();
+        }, 500); // Retardo de 500ms
+      } else {
+        Alert.alert('Error', 'Error en las credenciales');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo');
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      console.log('Intentando iniciar sesión con:', email, password);
+      const response = await axios.post('http://10.0.2.2:5000/login', {
+        email,
+        password,
+      });
+      console.log('respondio');
+      if (response.status === 200) {
+        const user = response.data;
+        await AsyncStorage.setItem('userToken', user.id.toString());
+        await AsyncStorage.setItem('userId', user.id.toString());
+        // navigation.navigate('Profile', { userId: user.id });
+        navigation.navigate('Home');
+      } else {
+        Alert.alert('Error', 'Error en las credenciales');
+      }
+    } catch (error) {
+      console.log('No respondio');
+      console.error(error);
+      Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
+    }
+  };
+
+  if (!fontsLoaded) {
+    return <View style={styles.loadingContainer}><Text>Cargando...</Text></View>;
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
+            <Icon name="arrow-back" size={30} color="#fff" />
+          </TouchableOpacity>
+          <Image source={require('../assets/logo_blanco.png')} style={styles.header_image}/>
+          <Text style={styles.headerText}>CREA TU CUENTA</Text>
         </View>
-        <View style={styles.inputs}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.form}>
             <TextInput
-                placeholder="Email"
-                placeholderTextColor="#aaa"
-                style={styles.input_text}
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#aaa"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
             <TextInput
-                placeholder="Nombre Completo"
-                placeholderTextColor="#aaa"
-                style={styles.input_text}
+              style={styles.input}
+              placeholder="Nombre Completo"
+              placeholderTextColor="#aaa"
+              value={nombre}
+              onChangeText={setNombre}
+              autoCapitalize="none"
             />
             <TextInput
-                placeholder="Username"
-                placeholderTextColor="#aaa"
-                style={styles.input_text}
+              style={styles.input}
+              placeholder="Username"
+              placeholderTextColor="#aaa"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
             />
-            <TextInput
-                placeholder="Password"
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.inputPassword}
+                placeholder="Contraseña"
                 placeholderTextColor="#aaa"
-                style={styles.input_text}
-            />
-            <TextInput
-                placeholder="Repeat Password"
+                secureTextEntry={true}
+                value={password}
+                onChangeText={setPassword}
+                autoCapitalize="none"
+              />
+              <Icon name="eye-off" size={20} color="#aaa" />
+            </View>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.inputPassword}
+                placeholder="Repetir Contraseña"
                 placeholderTextColor="#aaa"
-                style={styles.input_text}
-            />
-        </View>
-        <View style={styles.register_button_container}>
-            <TouchableOpacity style={styles.register_button}>
-                <Text style={styles.register_button_Text}>Crear Cuenta</Text>
-            </TouchableOpacity>
-        </View>
-      </View>
-    );
+                secureTextEntry={true}
+                value={passwordConfirm}
+                onChangeText={setPasswordConfirm}
+                autoCapitalize="none"
+              />
+              <Icon name="eye-off" size={20} color="#aaa" />
+            </View>
+            <View style={styles.media_section}>
+              <Button title="Select Image" onPress={selectImage} style={styles.upload_Media}/>
+            </View>
+          </View>
+        </ScrollView>
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Crear cuenta</Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-    register: {
-        backgroundColor: '#e8e8e8',
-        width: '100%',
-        height: '100%',
-    },
-    title: {
-        width: '100%',
-        height: '25%',
-        backgroundColor: '#ffbd59',
-        borderBottomRightRadius: 20,
-        borderBottomLeftRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    title_text: {
-        fontFamily: 'Typewriter-Bold',
-        fontSize: 30,
-        color: '#fff',
-        textShadowColor: '#949494',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 10,
-    },
-    inputs: {
-        flex: 1,
-        justifyContent: 'space-between',
-        marginVertical: 45,
-        paddingHorizontal: 40,
-        alignItems: 'center',
-        height: '100%',
-    },
-    input_text: {
-        width: '100%',
-        height: 60,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 25,
-        paddingHorizontal: 20,
-        fontSize: 16,
-        marginBottom: 20,
-    },
-    register_button_container: {
-        width: '100%',
-        paddingHorizontal: 40,
-        marginBottom: 60,
-    },
-    register_button: {
-        width: '100%',
-        height: 50,
-        backgroundColor: '#ffbd59',
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-      },
-      register_button_Text: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-      },
-})
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f2f2f2',
+  },
+  container: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    backgroundColor: '#ffbd59',
+    height: 250,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+  },
+  headerText: {
+    fontFamily: 'Typewriter-Bold',
+    fontSize: 30,
+    color: '#fff',
+    textShadowColor: '#949494',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 10,
+  },
+  header_image: {
+    height: 100,
+    width: 130,
+    marginBottom: 10,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  form: {
+    margin: 20,
+    marginTop: 30,
+    marginHorizontal: 30,
+    flex: 1,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    marginBottom: 25,
+    paddingHorizontal: 15,
+    height: 55,
+    fontSize: 16,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    marginBottom: 25,
+    paddingHorizontal: 15,
+  },
+  inputPassword: {
+    flex: 1,
+    height: 55,
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#ffbd59',
+    borderRadius: 25,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    marginHorizontal: 30,
+    marginBottom: 30,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  media_section: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  upload_Media: {
+    borderRadius: 20,
+  },
+});
 
-export default RegisterSceen;
+export default RegisterScreen;
