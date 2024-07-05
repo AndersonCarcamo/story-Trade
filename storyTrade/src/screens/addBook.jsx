@@ -53,7 +53,7 @@ const AddBook = ({ route, navigation }) => {
 
       if (response.status === 200) {
         Alert.alert('Libro agregado');
-        navigation.goBack();
+        navigation.navigate('Profile', { userId, refresh: true });
       } else {
         Alert.alert('Error', 'No se pudo agregar el libro');
       }

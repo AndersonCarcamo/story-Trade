@@ -164,7 +164,7 @@ const UserProfile = ({ route, navigation }) => {
     };
 
     fetchUser();
-  }, [userId]);
+  }, [userId, route.params?.refresh]);
 
   const handleBookLongPress = async (bookId) => {
     try {
