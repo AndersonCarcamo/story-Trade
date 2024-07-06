@@ -1,313 +1,183 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, SafeAreaView, FlatList, Dimensions, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Font from 'expo-font';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native'; // Import navigation
 
-const UserProfileView = ({ route }) => {
-    const { userId } = route.params;
-    const [user, setUser] = useState(null);
-    const [fontsLoaded, setFontsLoaded] = useState(false);
-    const [photoUrl, setPhotoUrl] = useState('https://via.placeholder.com/150');
-    const [bookImages, setBookImages] = useState({});
-    const navigation = useNavigation(); // Use navigation
+import defaultImage from '../assets/default_image.jpg';
+import SearchInput from './searchInput';
 
-    useEffect(() => {
-      const loadFonts = async () => {
-        await Font.loadAsync({
-          'Typewriter-Bold': require('../assets/Fonts/TrueTypewriter/Typewriter-Bold.ttf'),
-        });
-        setFontsLoaded(true);
-      };
+const groupBooksByCategory = (books) => {
+  const groupedBooks = books.reduce((acc, book) => {
+    const category = book.book_info && book.book_info.category ? book.book_info.category : 'Unknown';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(book);
+    return acc;
+  }, {});
+  return groupedBooks;
+};
 
-      loadFonts();
-    }, []);
-
-    const fetchUserAvatar = async (avatarName) => {
-      const defaultImage = 'https://via.placeholder.com/150';
-      try {
-        const response = await fetch(`https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get?fileName=avatars/${avatarName}`);
-        if (response.ok) {
-          const base64Data = await response.text();
-          return `data:${response.headers.get('content-type')};base64,${base64Data}`;
-        } else {
-          return defaultImage;
-        }
-      } catch (error) {
-        console.error(`Failed to fetch avatar ${avatarName}: `, error);
-        return defaultImage;
-      }
-    };
-
-    const fetchBookImage = async (imageName) => {
-      const defaultImage = 'https://via.placeholder.com/150';
-      try {
-        const response = await fetch(`https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get?fileName=images/${imageName}`);
-        if (response.ok) {
-          const base64Data = await response.text();
-          return `data:${response.headers.get('content-type')};base64,${base64Data}`;
-        } else {
-          return defaultImage;
-        }
-      } catch (error) {
-        console.error(`Failed to fetch book image ${imageName}: `, error);
-        return defaultImage;
-      }
-    };
-
-    const loadBookImages = async (books) => {
-      const images = {};
-      for (const book of books) {
-        const imageUrl = await fetchBookImage(book.book_info.image);
-        images[book.id] = imageUrl;
-      }
-      setBookImages(images);
-    };
-
-    useEffect(() => {
-      const fetchUser = async () => {
+const fetchBookImages = async (books) => {
+  const updatedBooks = await Promise.all(
+    books.map(async (book) => {
+      const imageFileName = book.book_info?.image;
+      if (!imageFileName) {
+        book.imageUri = null; // No image case
+      } else {
         try {
-          const token = await AsyncStorage.getItem('userToken');
-          const response = await axios.get(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+          const fileName = `images/${imageFileName}`;
+          const response = await axios.get('https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get', {
+            params: { fileName: fileName },
           });
 
-          const userData = response.data;
-          setUser(userData);
-
-          if (userData.avatar) {
-            const avatarUrl = await fetchUserAvatar(userData.avatar);
-            setPhotoUrl(avatarUrl);
-          }
-
-          if (userData.books) {
-            await loadBookImages(userData.books);
+          if (response.status === 200) {
+            const base64Data = response.data;
+            const imageUrl = `data:${response.headers['content-type']};base64,${base64Data}`;
+            book.imageUri = imageUrl;
+          } else {
+            book.imageUri = null; // No image case
           }
         } catch (error) {
-          console.error(error);
-          Alert.alert('Error', 'No se pudo cargar el perfil');
+          console.error(`Failed to fetch image for book ${book.book_info ? book.book_info.title : book.title}: `, error);
+          book.imageUri = null; // No image case
         }
-      };
-
-      if (userId) {
-        fetchUser();
       }
-    }, [userId]);
+      return book;
+    })
+  );
+  return updatedBooks;
+};
 
-    if (!user || !fontsLoaded) {
-      return <Text>Cargando...</Text>;
+const searchBooks = async (query) => {
+  try {
+    const response = await fetch(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/search?query=${query}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
 
-    const chunkGenres = (genres, chunkSize) => {
-      const chunks = [];
-      for (let i = 0; i < genres.length; i += chunkSize) {
-        chunks.push(genres.slice(i, i + chunkSize));
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to search books: ', error);
+    throw error;
+  }
+};
+
+const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
+  const [booksWithImages, setBooksWithImages] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [groupedBooks, setGroupedBooks] = useState({});
+
+  useEffect(() => {
+    const loadBooks = async () => {
+      try {
+        const updatedBooks = await fetchBookImages(books);
+        setBooksWithImages(updatedBooks);
+      } catch (error) {
+        console.error('Failed to load books with images: ', error);
       }
-      return chunks;
     };
+    loadBooks();
+  }, [books]);
 
-    const renderStars = () => {
-      let stars = [];
-      for (let i = 0; i < 5; i++) {
-        stars.push(
-          <Icon
-            key={i}
-            name="star"
-            size={20}
-            color={i < Math.floor(user.rating) ? '#ffbd59' : '#d3d3d3'}
-          />
-        );
+  useEffect(() => {
+    const performSearch = async () => {
+      if (search) {
+        try {
+          const results = await searchBooks(search);
+          const updatedResults = await fetchBookImages(results);
+          setFilteredBooks(updatedResults);
+        } catch (error) {
+          console.error('Failed to perform search: ', error);
+        }
+      } else {
+        setFilteredBooks(booksWithImages);
       }
-      return stars;
     };
+    performSearch();
+  }, [search, booksWithImages]);
 
-    const { width } = Dimensions.get('window');
-    const genreWidth = width * 0.2;
-    const genresPerRow = Math.floor(width * 0.8 / genreWidth);
-    const genreRows = chunkGenres(user.genres, genresPerRow);
+  useEffect(() => {
+    const grouped = groupBooksByCategory(filteredBooks);
+    setGroupedBooks(grouped);
+  }, [filteredBooks]);
 
-    const renderBookItem = ({ item }) => {
-      const bookImage = bookImages[item.id] || 'https://via.placeholder.com/150';
-      return (
-        <View style={styles.bookItem}>
-          <Image source={{ uri: bookImage }} style={styles.bookImage} />
-        </View>
-      );
-    };
-
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.container}>
-            <View style={styles.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Icon name="arrow-back" size={24} color="#fff" />
-              </TouchableOpacity>
-              <Image source={require('../assets/logo_blanco.png')} style={styles.header_image} />
-              <Text style={styles.headerText}>PERFIL</Text>
-            </View>
-            <View style={styles.profilePresentation}>
-              <Image style={styles.photo} source={{ uri: photoUrl }} />
-              <Text style={styles.name}>{user.name}</Text>
-              <View style={styles.starsTrades}>
-                <View style={styles.starsContainer}>{renderStars()}</View>
-                <View style={styles.tradesContainer}>
-                  <Text style={styles.tradesText}>{user.exchanges}</Text>
-                  <Icon name="swap-horizontal" size={20} color="#ffbd59" />
-                </View>
-              </View>
-              <View style={styles.generos}>
-                <Text style={styles.generosTitulo}>Géneros de Interés: </Text>
-                {genreRows.map((row, rowIndex) => (
-                  <View key={rowIndex} style={styles.genreRow}>
-                    {row.map((genre, index) => (
-                      <Text key={index} style={styles.genreItem}>{genre}</Text>
-                    ))}
-                  </View>
+  return (
+    <View style={styles.container}>
+      <SearchInput search={search} handleSearch={handleSearch} />
+      <ScrollView>
+        {Object.keys(groupedBooks).map((category) => (
+          <View key={category} style={styles.categoryContainer}>
+            <Text style={styles.categoryTitle}>{category}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.bookRow}>
+                {groupedBooks[category].map((book) => (
+                  <TouchableOpacity key={book.id} onPress={() => viewDetails(book)} style={styles.bookContainer}>
+                    {book.imageUri ? (
+                      <Image source={{ uri: book.imageUri }} style={styles.bookImage} />
+                    ) : (
+                      <View style={styles.noImageContainer}>
+                        <Text style={styles.noImageText}>{book.book_info.title}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
                 ))}
               </View>
-            </View>
-            <View style={styles.libros}>
-              <Text style={styles.librosTitulo}>Lista de libros:</Text>
-              <FlatList
-                data={user.books}
-                renderItem={renderBookItem}
-                keyExtractor={(item, index) => index.toString()}
-                numColumns={2}
-                columnWrapperStyle={styles.bookRow}
-                showsVerticalScrollIndicator={false}
-                key={2}
-              />
-            </View>
+            </ScrollView>
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  };
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#efefef',
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-  },
   container: {
     flex: 1,
+    backgroundColor: '#fff',
   },
-  header: {
-    backgroundColor: '#ffbd59',
-    height: 250,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-    flexDirection: 'row',
+  categoryContainer: {
+    marginBottom: 16,
   },
-  backButton: {
-    position: 'absolute',
-    left: 10,
-    top: 40,
-    zIndex: 1,
-  },
-  header_image: {
-    height: 100,
-    width: 130,
-    marginBottom: 10,
-  },
-  headerText: {
+  categoryTitle: {
     fontFamily: 'Typewriter-Bold',
-    fontSize: 30,
-    color: '#fff',
-    textShadowColor: '#949494',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 10,
-  },
-  profilePresentation: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 20,
-  },
-  photo: {
-    marginTop: 20,
-    borderRadius: 100,
-    height: 120,
-    width: 120,
-  },
-  name: {
-    fontSize: 40,
-    color: '#ffbd59',
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  starsTrades: {
-    flexDirection: 'row',
-    width: '40%',
-    justifyContent: 'space-between',
-  },
-  starsContainer: {
-    flexDirection: 'row',
-  },
-  tradesContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  tradesText: {
-    fontSize: 16,
-    color: '#000',
-    marginRight: 5,
-  },
-  libros: {
-    flex: 1,
-    alignItems: 'center',
-    width: '100%',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  librosTitulo: {
-    margin: 5,
-    marginBottom: 10,
-    fontSize: 20,
-  },
-  bookRow: {
-    justifyContent: 'space-between',
-  },
-  bookItem: {
-    margin: 5,
-    padding: 10,
-    borderRadius: 15,
-    alignItems: 'center',
-    width: Dimensions.get('window').width / 2 - 30,
-  },
-  bookImage: {
-    width: 150,
-    height: 200,
-    marginBottom: 10,
-  },
-  generos: {
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  generosTitulo: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginHorizontal: 16,
+    marginVertical: 8,
   },
-  genreRow: {
+  bookRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 5,
+    alignItems: 'center',
+    marginHorizontal: 16,
   },
-  genreItem: {
-    marginHorizontal: 5,
-    padding: 5,
-    backgroundColor: '#f1f1f1',
-    borderRadius: 10,
+  bookContainer: {
+    marginRight: 8,
+  },
+  bookImage: {
+    width: 80,
+    height: 120,
+    borderRadius: 8,
+  },
+  noImageContainer: {
+    width: 80,
+    height: 120,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 8,
+  },
+  noImageText: {
+    textAlign: 'center',
+    fontSize: 14,
   },
 });
 
-export default UserProfileView;
+export default SearchBook;
