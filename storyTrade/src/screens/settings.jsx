@@ -30,6 +30,7 @@ const Settings = ({ navigate }) => {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userEmail');
+    await AsyncStorage.removeItem('userId');
     navigation.replace('Login');
   };
 

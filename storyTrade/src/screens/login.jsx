@@ -22,7 +22,7 @@ const LoginScreen = ({ navigation }) => {
       if (response.status === 200){
         const user = response.data;
         await AsyncStorage.setItem('userToken', user.id.toString());
-        // await AsyncStorage.setItem('userId', user.id);
+        await AsyncStorage.setItem('userId', user.id);
         await AsyncStorage.setItem('userEmail', user.email);
         // navigation.navigate('Profile', { userId: user.id });
         navigation.navigate('Home');
