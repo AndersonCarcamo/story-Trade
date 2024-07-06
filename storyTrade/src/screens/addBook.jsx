@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, SafeAreaView, Image, Button, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
+import UserProfile from './profile';
 
 const AddBook = ({ route, navigation }) => {
   const { userId } = route.params;
@@ -17,6 +18,13 @@ const AddBook = ({ route, navigation }) => {
   const [antiquity, setAntiquity] = useState('');
   const [editorial, setEditorial] = useState('');
   const [categorias, setCategorias] = useState([]);
+  const ref = useRef();
+
+  const callExternal = () => {
+    if (ref.current) {
+      ref.current.fetchUser();
+    }
+  };
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -70,6 +78,7 @@ const AddBook = ({ route, navigation }) => {
       console.log('Response status:', response.status);
       if (response.status === 200) {
         Alert.alert('Libro agregado');
+        callExternal();
         navigation.navigate('Profile', { userId, refresh: true });
       } else {
         Alert.alert('Error', 'No se pudo agregar el libro');
