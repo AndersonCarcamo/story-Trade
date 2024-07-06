@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, SafeAreaView, FlatList, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, SafeAreaView, FlatList, Dimensions, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Font from 'expo-font';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 
 const UserProfileView = ({ route }) => {
     const { userId } = route.params;
@@ -11,6 +12,7 @@ const UserProfileView = ({ route }) => {
     const [fontsLoaded, setFontsLoaded] = useState(false);
     const [photoUrl, setPhotoUrl] = useState('https://via.placeholder.com/150');
     const [bookImages, setBookImages] = useState({});
+    const navigation = useNavigation(); 
 
     useEffect(() => {
       const loadFonts = async () => {
@@ -142,9 +144,13 @@ const UserProfileView = ({ route }) => {
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.container}>
             <View style={styles.header}>
+              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <Icon name="arrow-back" size={24} color="#fff" />
+              </TouchableOpacity>
               <Image source={require('../assets/logo_blanco.png')} style={styles.header_image} />
               <Text style={styles.headerText}>PERFIL</Text>
             </View>
+
             <View style={styles.profilePresentation}>
               <Image style={styles.photo} source={{ uri: photoUrl }} />
               <Text style={styles.name}>{user.name}</Text>
@@ -202,6 +208,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
+    flexDirection: 'row',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 10,
+    top: 40,
+    zIndex: 1,
   },
   header_image: {
     height: 100,
