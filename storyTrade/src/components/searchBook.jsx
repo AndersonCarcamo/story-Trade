@@ -23,7 +23,7 @@ const fetchBookImages = async (books) => {
     books.map(async (book) => {
       const imageFileName = book.book_info?.image;
       if (!imageFileName) {
-        book.imageUri = defaultImage;
+        book.imageUri = null;
       } else {
         try {
           const fileName = `images/${imageFileName}`;
@@ -38,11 +38,11 @@ const fetchBookImages = async (books) => {
             const imageUrl = `data:${response.headers['content-type']};base64,${base64Data}`;
             book.imageUri = imageUrl;
           } else {
-            book.imageUri = defaultImage;
+            book.imageUri = null;
           }
         } catch (error) {
           console.error(`Failed to fetch image for book ${book.book_info ? book.book_info.title : book.title}: `, error);
-          book.imageUri = defaultImage;
+          book.imageUri = null;
         }
       }
       return book;
@@ -118,16 +118,21 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
         {Object.keys(groupedBooks).map((category) => (
           <View key={category} style={styles.categoryContainer}>
             <Text style={styles.categoryTitle}>{category}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.bookRow}>
               {groupedBooks[category].map((book) => (
-                <TouchableOpacity key={book.id} onPress={() => viewDetails(book)}>
-                  <Image source={{ uri: book.imageUri || defaultImage }} style={styles.bookImage} />
+                <TouchableOpacity key={book.id} onPress={() => viewDetails(book)} style={styles.bookContainer}>
+                    {book.imageUri ? (
+                      <Image source={{ uri: book.imageUri }} style={styles.bookImage} />
+                    ) : (
+                      <View style={styles.noImageContainer}>
+                        <Text style={styles.noImageText}>{book.book_info.title}</Text>
+                      </View>
+                    )}
                 </TouchableOpacity>
               ))}
-              <TouchableOpacity style={styles.addBookButton}>
-                <FontAwesome name="plus" size={24} color="black" />
-              </TouchableOpacity>
             </View>
+            </ScrollView>
           </View>
         ))}
       </ScrollView>
@@ -155,18 +160,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
   },
+  bookContainer: {
+    marginRight: 8,
+  },
   bookImage: {
     width: 80,
     height: 120,
-    marginRight: 10,
+    borderRadius: 8,
   },
-  addBookButton: {
+  noImageContainer: {
     width: 80,
     height: 120,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
+    padding: 8,
+  },
+  noImageText: {
+    textAlign: 'center',
+    fontSize: 14,
   },
   bookTitle: {
     fontFamily: 'Typewriter-Bold',

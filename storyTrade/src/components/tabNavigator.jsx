@@ -11,6 +11,7 @@ import UserProfile from '../screens/profile';
 import AddBook from '../screens/addBook';
 import SettingsStack from './settingsStackNavigator'
 import ProfileStack from './profileStack';
+import HomeStack from './homeStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -61,8 +62,8 @@ export function TabNavigator() {
         }
       })}
     >
-      <Tab.Screen name="Home" component={Home} options={{ headerShown: false }} />
-      <Tab.Screen name="Profile">
+      <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Profile" options={{ headerShown: false }}>
         {() => <ProfileStack userId={userId} />}
       </Tab.Screen>
       <Tab.Screen name="ChatList" component={ChatStackNavigator} options={{ headerShown: false }} />

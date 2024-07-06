@@ -5,6 +5,7 @@ import axios from 'axios';
 import * as Font from 'expo-font';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Haptic } from 'expo';
+import { useFocusEffect } from '@react-navigation/native';
 
 const UserProfile = ({ userId, navigation }) => {
   const [user, setUser] = useState(null);
@@ -134,53 +135,55 @@ const UserProfile = ({ userId, navigation }) => {
     setBookImages(images);
   };
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = await AsyncStorage.getItem('userToken');
-        const response = await axios.get(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const userData = response.data;
-        setUser(userData);
-
-        const loggedInUserId = await AsyncStorage.getItem('userId');
-        setIsOwnProfile(userId == loggedInUserId);
-
-        setStarRating(Math.floor(userData.rating));
-        setTrades(userData.exchanges);
-        setUserGenres(userData.genres);
-
-        if (userData.avatar) {
-          const avatarUrl = await fetchUserAvatar(userData.avatar);
-          setPhotoUrl(avatarUrl);
-        }
-
-        if (userData.books) {
-          await loadBookImages(userData.books);
-        }
-
-        if (userId != loggedInUserId) {
-          const markedResponse = await axios.get(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/like/${userId}/check`, {
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchUser = async () => {
+        try {
+          const token = await AsyncStorage.getItem('userToken');
+          const response = await axios.get(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}`, {
             headers: {
               Authorization: `Bearer ${token}`
             }
           });
-          setMarkedBooks(markedResponse.data.markedBooks);
-        }
-      } catch (error) {
-        console.error(error);
-        Alert.alert('Error', 'No se pudo cargar el perfil');
-      }
-    };
 
-    if (userId) {
-      fetchUser();
-    }
-  }, [userId]);
+          const userData = response.data;
+          setUser(userData);
+
+          const loggedInUserId = await AsyncStorage.getItem('userId');
+          setIsOwnProfile(userId == loggedInUserId);
+
+          setStarRating(Math.floor(userData.rating));
+          setTrades(userData.exchanges);
+          setUserGenres(userData.genres);
+
+          if (userData.avatar) {
+            const avatarUrl = await fetchUserAvatar(userData.avatar);
+            setPhotoUrl(avatarUrl);
+          }
+
+          if (userData.books) {
+            await loadBookImages(userData.books);
+          }
+
+          if (userId != loggedInUserId) {
+            const markedResponse = await axios.get(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/like/${userId}/check`, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            setMarkedBooks(markedResponse.data.markedBooks);
+          }
+        } catch (error) {
+          console.error(error);
+          Alert.alert('Error', 'No se pudo cargar el perfil');
+        }
+      };
+
+      if (userId) {
+        fetchUser();
+      }
+    }, [userId])
+  );
 
   useEffect(() => {
     const getGenres = async () => {
@@ -258,6 +261,8 @@ const UserProfile = ({ userId, navigation }) => {
 
   const renderBookItem = ({ item }) => {
     const bookImage = bookImages[item.id] || 'https://via.placeholder.com/150';
+    //const bookImage = bookImages[item.id] ? { uri: bookImages[item.id] } : require('path/to/placeholder/image.png');
+
     return isOwnProfile ? (
       <View
         style={[
@@ -571,3 +576,4 @@ const styles = StyleSheet.create({
 });
 
 export default UserProfile;
+
