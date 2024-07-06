@@ -13,7 +13,7 @@ import BookDetails from './bookDetails';
 
 const fetchBooks = async () => {
   try {
-    const response = await fetch('http://localhost:5000/books');
+    const response = await fetch('https://dbstorytrada-b5fcff8487d7.herokuapp.com/books');
     if (response.ok) {
       const books = await response.json();
       return books;

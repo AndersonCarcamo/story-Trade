@@ -23,7 +23,7 @@ const CompleteProfile = ({ navigation }) => {
 
   const handleCompleteProfile = async () => {
     try {
-      const response = await axios.post('poner-API', {
+      const response = await axios.post('https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/<int:user_id>', {
         celular,
         edad,
         genero,

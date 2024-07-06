@@ -13,7 +13,7 @@ const LoginScreen = ({ navigation }) => {
       
       console.log('Intentando iniciar sesión con:', email, password);
       
-      const response = await axios.post('http://127.0.0.1:5000/login', {
+      const response = await axios.post('https://dbstorytrada-b5fcff8487d7.herokuapp.com/login', {
         email,
         password,
       });
