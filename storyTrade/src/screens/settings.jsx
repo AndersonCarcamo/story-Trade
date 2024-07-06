@@ -6,7 +6,7 @@ import axios from 'axios';
 
 import Header from '../components/headerH';
 
-const Settings = ({ navigate }) => {
+const Settings = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -80,7 +80,7 @@ const Settings = ({ navigate }) => {
     <View style={styles.container}>
       <Header/>
       <View style={styles.content}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Complete Profile')}>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('EditProfile')}>
           <Text style={styles.buttonText}>Editar Perfil</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>

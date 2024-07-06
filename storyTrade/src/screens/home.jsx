@@ -11,9 +11,25 @@ import SearchBook from '../components/searchBook';
 import BookDetails from './bookDetails';
 
 
+// const fetchBooks = async () => {
+//   try {
+//     const response = await fetch('https://dbstorytrada-b5fcff8487d7.herokuapp.com/books');
+//     if (response.ok) {
+//       const books = await response.json();
+//       return books;
+//     } else {
+//       console.error('Failed to fetch books: ', response.statusText);
+//       return [];
+//     }
+//   } catch (error) {
+//     console.error('Failed to fetch books: ', error);
+//     return [];
+//   }
+// };
+
 const fetchBooks = async () => {
   try {
-    const response = await fetch('https://dbstorytrada-b5fcff8487d7.herokuapp.com/books');
+    const response = await fetch('https://dbstorytrada-b5fcff8487d7.herokuapp.com/books_with_users');
     if (response.ok) {
       const books = await response.json();
       return books;
@@ -26,7 +42,6 @@ const fetchBooks = async () => {
     return [];
   }
 };
-
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -25,18 +25,15 @@ const chats = [
 ];
 
 const ChatList = ({ navigation }) => {
-  const goBack = () => {
-    navigation.goBack();
-  };
 
   const openChat = (chat) => {
-    navigation.navigate('Pagos', { chatId: chat.id, bookId: chat.bookId });
+    navigation.navigate('PaymentOptions', { chatId: chat.id, bookId: chat.bookId });
   };
+
 
   return (
     <View style={styles.container}>
       <Header />
-      <SearchInput />
       <ScrollView style={styles.chatList}>
         <Text style={styles.chatListTitle}>Lista de Chats</Text>
         {chats.map((chat) => (
@@ -55,24 +52,6 @@ const ChatList = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      {/* <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Home')}>
-          <FontAwesome name="home" size={24} color="#FFA500" />
-          <Text style={styles.footerButtonText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Profile')}>
-          <FontAwesome name="user" size={24} color="#666" />
-          <Text style={styles.footerButtonText}>Profile</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('AddBook')}>
-          <FontAwesome name="plus-circle" size={24} color="#666" />
-          <Text style={styles.footerButtonText}>Add Book</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('AddGenre')}>
-          <FontAwesome name="tags" size={24} color="#666" />
-          <Text style={styles.footerButtonText}>Add Genre</Text>
-        </TouchableOpacity>
-      </View> */}
     </View>
   );
 };

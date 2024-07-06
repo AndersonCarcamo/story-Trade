@@ -1,33 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, SafeAreaView, Image, Button, ScrollView, Modal, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, SafeAreaView, Image, Button, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import * as Font from 'expo-font';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
-import { Picker } from '@react-native-picker/picker'; // Importar Picker desde la nueva biblioteca
+import { Picker } from '@react-native-picker/picker';
 
 const AddBook = ({ route, navigation }) => {
-  const { userId } = route.params; // Recibir userId
+  const { userId } = route.params;
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [descripcion, setDescipcion] = useState('');
-  const [categoria, setCategoria] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
   const [rating, setRating] = useState('');
-  const [salida, setSalida] = useState('');
-  const [antiguedad, setAntiguedad] = useState('');
+  const [release_year, setReleaseYear] = useState('');
+  const [antiquity, setAntiquity] = useState('');
   const [editorial, setEditorial] = useState('');
-  const [imageSource, setImageSource] = useState(null);
-  const [videoSource, setVideoSource] = useState(null);
-  const [categorias, setCategorias] = useState([]); // Estado para almacenar las categorías
+  const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const response = await axios.get('https://dbstorytrada-b5fcff8487d7.herokuapp.com/genres');
-        setCategorias(response.data.genres);
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) {
+          console.log('No token found');
+          return;
+        }
+        const response = await axios.get('https://dbstorytrada-b5fcff8487d7.herokuapp.com/genres', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        console.log('Categorias fetched', response.data);
+        setCategorias(response.data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('Error fetching categorias:', error);
+        setCategorias([]);
       }
     };
     fetchCategorias();
@@ -36,45 +44,30 @@ const AddBook = ({ route, navigation }) => {
   const handleAddBook = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      
-      let imageUrl = null;
-      let videoUrl = null;
-      
-      if (imageSource) {
-        try {
-          imageUrl = await uploadImage();
-        } catch (error) {
-          console.error('Error uploading image during book addition:', error);
-          return; // Sale de la función si hay un error al subir la imagen
-        }
+      if (!token) {
+        console.log('No token found');
+        return;
       }
-      
-      if (videoSource) {
-        try {
-          videoUrl = await uploadVideo();
-        } catch (error) {
-          console.error('Error uploading video during book addition:', error);
-          return; // Sale de la función si hay un error al subir el video
-        }
-      }
-      
-      const response = await axios.post(`http://10.0.2.2:5000/users/${userId}/books`, { 
-        title, 
-        author,
-        descripcion,
-        categoria,
-        rating,
-        salida,
-        antiguedad,
-        editorial,
-        imageUrl, // Agregar la URL de la imagen al registro
-        videoUrl, // Agregar la URL del video al registro
-      }, {
+      const bookData = { 
+        title: title, 
+        author: author,
+        description: description,
+        category: category,
+        rating: parseFloat(rating),
+        release_year: parseInt(release_year, 10),
+        antiquity: antiquity,
+        editorial: editorial
+      };
+
+      console.log('Adding book with data:', bookData);
+
+      const response = await axios.post(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}/books`, bookData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
 
+      console.log('Response status:', response.status);
       if (response.status === 200) {
         Alert.alert('Libro agregado');
         navigation.navigate('Profile', { userId, refresh: true });
@@ -82,98 +75,8 @@ const AddBook = ({ route, navigation }) => {
         Alert.alert('Error', 'No se pudo agregar el libro');
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error adding book:', error);
       Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
-    }
-  };
-
-  const selectImage = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        alert('Permission to access camera roll is required!');
-        return;
-      }
-
-      const pickerResult = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        quality: 1,
-      });
-
-      if (!pickerResult.cancelled) {
-        setImageSource({ uri: pickerResult.uri });
-      }
-    } catch (error) {
-      console.error('Image picker error:', error);
-    }
-  };
-
-  const uploadImage = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('image', {
-        uri: imageSource.uri,
-        type: 'image/jpeg',
-        name: 'photo.jpg',
-      });
-
-      const response = await axios.post('https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      return response.data.imageUrl; // Suponiendo que la API devuelve la URL de la imagen subida
-    } catch (error) {
-      console.error('Image upload error:', error);
-      Alert.alert('Error', 'Failed to upload image.');
-      throw error; // Lanza el error para manejarlo en handleAddBook
-    }
-  };
-
-  const selectVideo = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        alert('Permission to access camera roll is required!');
-        return;
-      }
-
-      const pickerResult = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-        allowsEditing: true,
-        quality: 1,
-      });
-
-      if (!pickerResult.cancelled) {
-        setVideoSource({ uri: pickerResult.uri });
-      }
-    } catch (error) {
-      console.error('Video picker error:', error);
-    }
-  };
-
-  const uploadVideo = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('video', {
-        uri: videoSource.uri,
-        type: 'video/mp4',
-        name: 'video.mp4',
-      });
-
-      const response = await axios.post('https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      return response.data.videoUrl; // Suponiendo que la API devuelve la URL del video subido
-    } catch (error) {
-      console.error('Video upload error:', error);
-      Alert.alert('Error', 'Failed to upload video.');
-      throw error; // Lanza el error para manejarlo en handleAddBook
     }
   };
 
@@ -205,17 +108,20 @@ const AddBook = ({ route, navigation }) => {
           />
           <TextInput
             placeholder="Descripción"
-            value={descripcion}
-            onChangeText={setDescipcion}
+            value={description}
+            onChangeText={setDescription}
             style={styles.input}
           />
-          <View style={styles.input}>
+          <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={categoria}
-              onValueChange={(itemValue) => setCategoria(itemValue)}
+              selectedValue={category}
+              onValueChange={(itemValue) => setCategory(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
             >
+              <Picker.Item label="Selecciona una categoría" value="" />
               {categorias.map((cat) => (
-                <Picker.Item key={cat} label={cat} value={cat} />
+                <Picker.Item key={cat.id} label={cat.name} value={cat.name} />
               ))}
             </Picker>
           </View>
@@ -227,14 +133,14 @@ const AddBook = ({ route, navigation }) => {
           />
           <TextInput
             placeholder="Año de salida"
-            value={salida}
-            onChangeText={setSalida}
+            value={release_year}
+            onChangeText={setReleaseYear}
             style={styles.input}
           />
           <TextInput
             placeholder="Antiguedad"
-            value={antiguedad}
-            onChangeText={setAntiguedad}
+            value={antiquity}
+            onChangeText={setAntiquity}
             style={styles.input}
           />
           <TextInput
@@ -243,10 +149,6 @@ const AddBook = ({ route, navigation }) => {
             onChangeText={setEditorial}
             style={styles.input}
           />
-          <View style={styles.media_section}>
-            <Button title="Select Image" onPress={selectImage} style={styles.upload_Media} />
-            <Button title="Select Video" onPress={selectVideo} style={styles.upload_Media} />
-          </View>
         </ScrollView>
         <TouchableOpacity style={styles.addButton} onPress={handleAddBook}>
           <Text style={styles.addButtonText}>Agregar</Text>
@@ -300,7 +202,7 @@ const styles = StyleSheet.create({
   },
   inputs: {
     marginHorizontal: 30,
-    flex: 1,
+    flexGrow: 1,
   },
   input: {
     backgroundColor: '#fff',
@@ -309,6 +211,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     height: 55,
     fontSize: 16,
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    marginBottom: 25,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    height: 55,
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+  },
+  picker: {
+    height: 55,
+    width: '100%',
+  },
+  pickerItem: {
+    fontSize: 16,
+    height: 55,
   },
   addButton: {
     backgroundColor: '#ffbd59',
@@ -337,36 +257,40 @@ export default AddBook;
 
 
 
+
 // import React, { useState, useEffect } from 'react';
-// import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, SafeAreaView, Image, Button, ScrollView, Modal, Pressable } from 'react-native';
+// import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, SafeAreaView, Image, Button, ScrollView } from 'react-native';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
 // import axios from 'axios';
-// import * as Font from 'expo-font';
 // import Icon from 'react-native-vector-icons/Ionicons';
 // import * as ImagePicker from 'expo-image-picker';
-// import { Picker } from '@react-native-picker/picker'; // Importar Picker desde la nueva biblioteca
+// import { Picker } from '@react-native-picker/picker';
 
 // const AddBook = ({ route, navigation }) => {
-//   const { userId } = route.params; // Recibir userId
+//   const { userId } = route.params;
 //   const [title, setTitle] = useState('');
 //   const [author, setAuthor] = useState('');
-//   const [descripcion, setDescipcion] = useState('');
-//   const [categoria, setCategoria] = useState('');
+//   const [description, setDescription] = useState('');
+//   const [category, setCategory] = useState('');
 //   const [rating, setRating] = useState('');
-//   const [salida, setSalida] = useState('');
-//   const [antiguedad, setAntiguedad] = useState('');
+//   const [release_year, setReleaseYear] = useState('');
+//   const [antiquity, setAntiquity] = useState('');
 //   const [editorial, setEditorial] = useState('');
-//   const [imageSource, setImageSource] = useState(null);
-//   const [videoSource, setVideoSource] = useState(null);
-//   const [categorias, setCategorias] = useState([]); // Estado para almacenar las categorías
+//   const [categorias, setCategorias] = useState([]);
 
 //   useEffect(() => {
 //     const fetchCategorias = async () => {
 //       try {
-//         const response = await axios.get('API_PARA_OBTENER_GENEROS');
-//         setCategorias(response.data.genres);
+//         const token = await AsyncStorage.getItem('userToken');
+//         const response = await axios.get('https://dbstorytrada-b5fcff8487d7.herokuapp.com/genres', {
+//           headers: {
+//             Authorization: `Bearer ${token}`
+//           }
+//         });
+//         setCategorias(response.data);
 //       } catch (error) {
-//         console.error('Error fetching categories:', error);
+//         console.error(error);
+//         setCategorias([]);
 //       }
 //     };
 //     fetchCategorias();
@@ -375,22 +299,24 @@ export default AddBook;
 //   const handleAddBook = async () => {
 //     try {
 //       const token = await AsyncStorage.getItem('userToken');
-//       const response = await axios.post(`http://10.0.2.2:5000/users/${userId}/books`, { 
-//         title, 
-//         author,
-//         descripcion,
-//         categoria,
-//         rating,
-//         salida,
-//         antiguedad,
-//         editorial
-//       }, {
+//       const bookData = { 
+//         title: title, 
+//         author: author,
+//         description: description,
+//         category: category,
+//         rating: parseFloat(rating),
+//         release_year: parseInt(release_year, 10),
+//         antiquity: antiquity,
+//         editorial: editorial
+//       };
+
+//       const response = await axios.post(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}/books`, bookData, {
 //         headers: {
 //           Authorization: `Bearer ${token}`
 //         }
 //       });
 
-//       if (response.status === 200) {
+//       if (response.status === 201) {
 //         Alert.alert('Libro agregado');
 //         navigation.navigate('Profile', { userId, refresh: true });
 //       } else {
@@ -399,96 +325,6 @@ export default AddBook;
 //     } catch (error) {
 //       console.error(error);
 //       Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
-//     }
-//   };
-
-//   const selectImage = async () => {
-//     try {
-//       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-//       if (!permissionResult.granted) {
-//         alert('Permission to access camera roll is required!');
-//         return;
-//       }
-
-//       const pickerResult = await ImagePicker.launchImageLibraryAsync({
-//         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-//         allowsEditing: true,
-//         quality: 1,
-//       });
-
-//       if (!pickerResult.cancelled) {
-//         setImageSource({ uri: pickerResult.uri });
-//       }
-//     } catch (error) {
-//       console.error('Image picker error:', error);
-//     }
-//   };
-
-//   const uploadImage = async () => {
-//     try {
-//       const formData = new FormData();
-//       formData.append('image', {
-//         uri: imageSource.uri,
-//         type: 'image/jpeg',
-//         name: 'photo.jpg',
-//       });
-
-//       const response = await axios.post('API_IMG', formData, {
-//         headers: {
-//           'Content-Type': 'multipart/form-data',
-//         },
-//       });
-
-//       Alert.alert('Success', 'Image uploaded successfully!');
-//       console.log('Image upload response:', response.data);
-//     } catch (error) {
-//       console.error('Image upload error:', error);
-//       Alert.alert('Error', 'Failed to upload image.');
-//     }
-//   };
-
-//   const selectVideo = async () => {
-//     try {
-//       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-//       if (!permissionResult.granted) {
-//         alert('Permission to access camera roll is required!');
-//         return;
-//       }
-
-//       const pickerResult = await ImagePicker.launchImageLibraryAsync({
-//         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-//         allowsEditing: true,
-//         quality: 1,
-//       });
-
-//       if (!pickerResult.cancelled) {
-//         setVideoSource({ uri: pickerResult.uri });
-//       }
-//     } catch (error) {
-//       console.error('Video picker error:', error);
-//     }
-//   };
-
-//   const uploadVideo = async () => {
-//     try {
-//       const formData = new FormData();
-//       formData.append('video', {
-//         uri: videoSource.uri,
-//         type: 'video/mp4',
-//         name: 'video.mp4',
-//       });
-
-//       const response = await axios.post('API_VIDEO', formData, {
-//         headers: {
-//           'Content-Type': 'multipart/form-data',
-//         },
-//       });
-
-//       Alert.alert('Success', 'Video uploaded successfully!');
-//       console.log('Video upload response:', response.data);
-//     } catch (error) {
-//       console.error('Video upload error:', error);
-//       Alert.alert('Error', 'Failed to upload video.');
 //     }
 //   };
 
@@ -520,17 +356,20 @@ export default AddBook;
 //           />
 //           <TextInput
 //             placeholder="Descripción"
-//             value={descripcion}
-//             onChangeText={setDescipcion}
+//             value={description}
+//             onChangeText={setDescription}
 //             style={styles.input}
 //           />
-//           <View style={styles.input}>
+//           <View style={styles.pickerContainer}>
 //             <Picker
-//               selectedValue={categoria}
-//               onValueChange={(itemValue) => setCategoria(itemValue)}
+//               selectedValue={category}
+//               onValueChange={(itemValue) => setCategory(itemValue)}
+//               style={styles.picker}
+//               itemStyle={styles.pickerItem}
 //             >
+//               <Picker.Item label="Selecciona una categoría" value="" />
 //               {categorias.map((cat) => (
-//                 <Picker.Item key={cat} label={cat} value={cat} />
+//                 <Picker.Item key={cat.id} label={cat.name} value={cat.name} />
 //               ))}
 //             </Picker>
 //           </View>
@@ -542,14 +381,14 @@ export default AddBook;
 //           />
 //           <TextInput
 //             placeholder="Año de salida"
-//             value={salida}
-//             onChangeText={setSalida}
+//             value={release_year}
+//             onChangeText={setReleaseYear}
 //             style={styles.input}
 //           />
 //           <TextInput
 //             placeholder="Antiguedad"
-//             value={antiguedad}
-//             onChangeText={setAntiguedad}
+//             value={antiquity}
+//             onChangeText={setAntiquity}
 //             style={styles.input}
 //           />
 //           <TextInput
@@ -558,10 +397,6 @@ export default AddBook;
 //             onChangeText={setEditorial}
 //             style={styles.input}
 //           />
-//           <View style={styles.media_section}>
-//             <Button title="Select Image" onPress={selectImage} style={styles.upload_Media} />
-//             <Button title="Select Video" onPress={selectVideo} style={styles.upload_Media} />
-//           </View>
 //         </ScrollView>
 //         <TouchableOpacity style={styles.addButton} onPress={handleAddBook}>
 //           <Text style={styles.addButtonText}>Agregar</Text>
@@ -615,7 +450,7 @@ export default AddBook;
 //   },
 //   inputs: {
 //     marginHorizontal: 30,
-//     flex: 1,
+//     flexGrow: 1,
 //   },
 //   input: {
 //     backgroundColor: '#fff',
@@ -624,6 +459,24 @@ export default AddBook;
 //     paddingHorizontal: 15,
 //     height: 55,
 //     fontSize: 16,
+//   },
+//   pickerContainer: {
+//     backgroundColor: '#fff',
+//     borderRadius: 25,
+//     marginBottom: 25,
+//     paddingHorizontal: 15,
+//     justifyContent: 'center',
+//     height: 55,
+//     borderWidth: 1,
+//     borderColor: '#dcdcdc',
+//   },
+//   picker: {
+//     height: 55,
+//     width: '100%',
+//   },
+//   pickerItem: {
+//     fontSize: 16,
+//     height: 55,
 //   },
 //   addButton: {
 //     backgroundColor: '#ffbd59',
