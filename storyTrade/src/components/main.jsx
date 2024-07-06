@@ -53,7 +53,6 @@ export function Main() {
         {/* <Stack.Screen name="SearchBook" component={SearchBook} options={{ headerShown: false }}/> */}
         <Stack.Screen name="BookDetails" component={BookDetails} options={{ headerShown: false }}/>
         <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
-
         <Stack.Screen name="ChatList" component={ChatList} options={{ headerShown: false }}/>
         <Stack.Screen name="Pagos" component={PaymentOptions} options={{ headerShown: false }}/>
         <Stack.Screen name="SettingsStack" component={SettingsStack} options={{ headerShown: false }}/>
