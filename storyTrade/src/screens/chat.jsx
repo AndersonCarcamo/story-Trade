@@ -104,24 +104,6 @@ const Chat = ({ navigation, route }) => {
                     ))}
                 </View>
             </View>
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Home')}>
-                    <FontAwesome name="home" size={24} color="#FFA500" />
-                    <Text style={styles.footerButtonText}>Home</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Profile')}>
-                    <FontAwesome name="user" size={24} color="#666" />
-                    <Text style={styles.footerButtonText}>Profile</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('AddBook')}>
-                    <FontAwesome name="plus-circle" size={24} color="#666" />
-                    <Text style={styles.footerButtonText}>Add Book</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('AddGenre')}>
-                    <FontAwesome name="tags" size={24} color="#666" />
-                    <Text style={styles.footerButtonText}>Add Genre</Text>
-                </TouchableOpacity>
-            </View>
         </View>
     );
 };
