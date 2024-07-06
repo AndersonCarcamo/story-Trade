@@ -40,6 +40,9 @@ const Chat = ({ navigation, route }) => {
 
     const confirmDelivery = async () => {
         try {
+            console.log(userId)
+            console.log(bookId)
+            console.log(ratingExchange)
             console.log(`user_id: ${userId}, book_id: ${bookId}, rating: ${ratingExchange}`);
             const transactionResponse = await axios.post('https://dbstorytrada-b5fcff8487d7.herokuapp.com/transactions', {
                 user_id: userId,

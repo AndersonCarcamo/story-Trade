@@ -36,6 +36,22 @@ const fetchUserAvatar = async (avatarName) => {
   }
 };
 
+const fetchVideoUrl = async (videoName) => {
+  try {
+    const response = await fetch(`https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get?fileName=videos/${videoName}`);
+    if (response.ok) {
+      const base64Data = await response.text();
+      return `data:${response.headers.get('content-type')};base64,${base64Data}`;
+    } else {
+      console.error(`Failed to fetch video ${videoName}`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Failed to fetch video ${videoName}: `, error);
+    return null;
+  }
+};
+
 const likeBook = async (bookId, ownerId) => {
   try {
     const likerId = await AsyncStorage.getItem('userId');
@@ -96,7 +112,9 @@ const unlikeBook = async (bookId, ownerId) => {
 
 const checkIfLiked = async (bookId, ownerId) => {
   try {
+   
     const likerId = await AsyncStorage.getItem('userId');
+    
     if (!likerId) {
       console.error('Liker ID is not available in AsyncStorage');
       return false;
@@ -135,7 +153,6 @@ const BookDetails = ({ book, goBack }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedUserBook, setSelectedUserBook] = useState(null);
-  const [visibleUsers, setVisibleUsers] = useState(6);
 
   useEffect(() => {
     const loadBookImage = async () => {
@@ -153,9 +170,9 @@ const BookDetails = ({ book, goBack }) => {
     };
 
     const loadVideo = async () => {
-      if (book.users.length > 0 && book.users[0].books.length > 0 && book.users[0].books[0].video) {
-        const videoUrl = book.users[0].books[0].video;
-        setVideoUrl(videoUrl);
+      if (book.video) {
+        const url = await fetchVideoUrl(book.video);
+        setVideoUrl(url);
       }
     };
 
@@ -198,18 +215,12 @@ const BookDetails = ({ book, goBack }) => {
     setHasLiked({ ...hasLiked, [userId]: !hasLiked[userId] });
   };
 
-  const loadMoreUsers = () => {
-    setVisibleUsers(prevVisibleUsers => prevVisibleUsers + 6);
-  };
-
-  const filteredUsers = book.users.filter(user => user.id !== parseInt(currentUser));
-  const usersToDisplay = filteredUsers.slice(0, visibleUsers);
-
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={goBack} style={styles.backButton}>
         <FontAwesome name="arrow-left" size={24} color="#FFA500" />
       </TouchableOpacity>
+      <SearchInput />
       <ScrollView>
         <View style={styles.bookDetails}>
           <Image source={{ uri: bookImage }} style={styles.bookImage} />
@@ -221,29 +232,21 @@ const BookDetails = ({ book, goBack }) => {
           </View>
         </View>
         <Text style={styles.exchangeTitle}>Intercambia con:</Text>
-        {usersToDisplay.length === 0 ? (
-          <Text style={styles.noUsers}>No hay usuarios disponibles para tradeo</Text>
-        ) : (
-          <View style={styles.usersContainer}>
-            {usersToDisplay.map((user) => (
-              <TouchableOpacity key={user.id} style={styles.user} onPress={() => openModal(user.id)}>
-                <Image source={{ uri: userAvatars[user.id] || defaultImage }} style={styles.userAvatar} />
-                <Text style={styles.userName}>{user.name}</Text>
-                <View style={styles.userRating}>
-                  {[...Array(5)].map((_, i) => (
-                    <FontAwesome key={i} name="star" size={16} color={i < user.rating ? "#FFD700" : "#DDD"} />
-                  ))}
-                </View>
-                <Text style={styles.userExchanges}>{user.exchanges} intercambios</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-        {filteredUsers.length > visibleUsers && (
-          <TouchableOpacity onPress={loadMoreUsers}>
-            <Text style={styles.viewMore}>ver más...</Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.usersContainer}>
+          {book.users.filter(user => user.id !== parseInt(currentUser)).map((user) => (
+            <TouchableOpacity key={user.id} style={styles.user} onPress={() => openModal(user.id)}>
+              <Image source={{ uri: userAvatars[user.id] || defaultImage }} style={styles.userAvatar} />
+              <Text style={styles.userName}>{user.name}</Text>
+              <View style={styles.userRating}>
+                {[...Array(5)].map((_, i) => (
+                  <FontAwesome key={i} name="star" size={16} color={i < user.rating ? "#FFD700" : "#DDD"} />
+                ))}
+              </View>
+              <Text style={styles.userExchanges}>{user.exchanges} intercambios</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={styles.viewMore}>ver más...</Text>
       </ScrollView>
 
       <Modal
@@ -275,9 +278,7 @@ const BookDetails = ({ book, goBack }) => {
                 style={styles.video}
               />
             ) : (
-              <View style={styles.videoPlaceholder}>
-                <Text style={styles.noVideo}>No hay video disponible</Text>
-              </View>
+              <Text style={styles.noVideo}>Sin video</Text>
             )}
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.likeButton} onPress={() => handleLike(selectedUser)}>
@@ -338,12 +339,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  noUsers: {
-    textAlign: 'center',
-    color: '#777',
-    marginTop: 16,
-    fontSize: 16,
   },
   usersContainer: {
     flexDirection: 'row',
@@ -421,19 +416,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     marginTop: 20,
-  },
-  videoPlaceholder: {
-    width: '100%',
-    height: 200,
-    marginTop: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ddd',
-  },
-  noVideo: {
-    fontFamily: 'Typewriter-Bold',
-    fontSize: 16,
-    color: '#777',
   },
 });
 
