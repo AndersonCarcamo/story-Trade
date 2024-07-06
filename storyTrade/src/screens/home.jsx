@@ -9,23 +9,8 @@ import Footer from '../components/footerH';
 import Menu from './navH';
 import SearchBook from '../components/searchBook';
 import BookDetails from './bookDetails';
-
-
-// const fetchBooks = async () => {
-//   try {
-//     const response = await fetch('https://dbstorytrada-b5fcff8487d7.herokuapp.com/books');
-//     if (response.ok) {
-//       const books = await response.json();
-//       return books;
-//     } else {
-//       console.error('Failed to fetch books: ', response.statusText);
-//       return [];
-//     }
-//   } catch (error) {
-//     console.error('Failed to fetch books: ', error);
-//     return [];
-//   }
-// };
+import UserProfileView from './userProfileView';
+import { useNavigation } from '@react-navigation/native';
 
 const fetchBooks = async () => {
   try {
@@ -50,6 +35,8 @@ const Home = () => {
   const [books, setBooks] = useState([]);
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
+  const navigation = useNavigation();
+
   useEffect(() => {
     const loadBooks = async () => {
       try {
@@ -66,23 +53,27 @@ const Home = () => {
             'Typewriter-Bold': require('../assets/Fonts/TrueTypewriter/Typewriter-Bold.ttf')
         });
         setFontsLoaded(true);
-    }
+    };
     loadFonts();
   }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
   const closeMenu = () => {
       setIsMenuOpen(false);
   };
+
   const handleSearch = (text) => {
       setSearch(text);
   };
+
   const viewDetails = (book) => {
     console.log('book_Info: ', book);
     setSelectedBook(book);
   };
+
   const goBack = () => {
       setSelectedBook(null);
   };
@@ -96,7 +87,7 @@ const Home = () => {
         <Header toggleMenu={toggleMenu} />
         {isMenuOpen && <Menu closeMenu={closeMenu} />}
         {selectedBook ? (
-            <BookDetails book={selectedBook} goBack={goBack} />
+            <BookDetails book={selectedBook} goBack={goBack}  />
         ) : (
             <SearchBook
             books={books}
