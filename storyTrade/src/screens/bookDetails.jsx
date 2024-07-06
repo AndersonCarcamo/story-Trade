@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import SearchInput from '../components/searchInput';
 import defaultImage from '../assets/default_image.jpg';
 import { Video } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 const fetchImage = async (imageName) => {
   try {
@@ -136,6 +136,8 @@ const BookDetails = ({ book, goBack }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedUserBook, setSelectedUserBook] = useState(null);
   const [visibleUsers, setVisibleUsers] = useState(6);
+
+  const navigation = useNavigation();
 
   useEffect(() => {
     const loadBookImage = async () => {
@@ -283,7 +285,13 @@ const BookDetails = ({ book, goBack }) => {
               <TouchableOpacity style={styles.likeButton} onPress={() => handleLike(selectedUser)}>
                 <FontAwesome name="heart" size={24} color={hasLiked[selectedUser] ? "#FF0000" : "#DDD"} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.viewProfileButton}>
+              <TouchableOpacity
+                style={styles.viewProfileButton}
+                onPress={() => {
+                  closeModal();
+                  navigation.navigate('UserProfileView', { userId: selectedUser });
+                }}
+              >
                 <Text style={styles.viewProfileText}>Ver Perfil</Text>
               </TouchableOpacity>
             </View>
