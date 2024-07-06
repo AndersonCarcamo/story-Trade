@@ -9,6 +9,7 @@ import Settings from '../screens/settings';
 import Home from '../screens/home';
 import UserProfile from '../screens/profile';
 import AddBook from '../screens/addBook';
+import SettingsStack from './settingsStackNavigator'
 
 const Tab = createBottomTabNavigator();
 
@@ -62,7 +63,7 @@ export function TabNavigator() {
       <Tab.Screen name="Home" component={Home} options={{ headerShown: false }} />
       <Tab.Screen name="Profile" component={UserProfile} initialParams={{ userId }} options={{ headerShown: false }} />
       <Tab.Screen name="ChatList" component={ChatStackNavigator} options={{ headerShown: false }} />
-      <Tab.Screen name="Settings" component={Settings} options={{ headerShown: false }} />
+      <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 }

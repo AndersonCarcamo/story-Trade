@@ -8,6 +8,7 @@ import axios from 'axios';
 import Header from '../components/headerH';
 import defaultAvatar from '../assets/default_image.jpg';
 
+
 const EditProfile = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [avatar, setAvatar] = useState(null);
@@ -18,7 +19,7 @@ const EditProfile = ({ navigation }) => {
   const [age, setAge] = useState('');
   const [avatarName, setAvatarName] = useState('');
   const [avatarType, setAvatarType] = useState('');
-
+  
   useEffect(() => {
     const loadUserData = async () => {
       const userId = await AsyncStorage.getItem('userId');
@@ -67,14 +68,14 @@ const EditProfile = ({ navigation }) => {
     });
 
     if (!result.cancelled) {
-      console.log('Selected avatar:', result.uri);
+        console.log('Selected avatar:', result.uri);
       setAvatar(result.uri);
       const filename = `${email}_avatar.${result.uri.split('.').pop()}`;
       setAvatarName(filename);
       setAvatarType(result.type || 'image/jpeg');
-      console.log('Avatar type:', result.type || 'image/jpeg');
+    console.log('Avatar type:', result.type || 'image/jpeg');
     } else {
-      console.log('User cancelled image picker');
+        console.log('User cancelled image picker');
     }
   };
 
@@ -125,9 +126,9 @@ const EditProfile = ({ navigation }) => {
   }
 
   return (
-    <View>
-      <Header/>
-      <View style={styles.container}>
+    <View >
+        <Header/>
+        <View style={styles.container}>
         <Text style={styles.title}>Editar Perfil</Text>
         <TouchableOpacity onPress={handleChooseAvatar}>
           <Image source={avatar ? { uri: avatar } : defaultAvatar} style={styles.avatar} />

@@ -19,6 +19,7 @@ import ChatList from '../screens/chatsList';
 import PaymentOptions from '../screens/vista_pagos';
 import Chat from '../screens/chat';
 import Settings from '../screens/settings';
+import SettingsStack from './settingsStackNavigator'
  
 const Stack = createStackNavigator();
 
@@ -55,6 +56,7 @@ export function Main() {
 
         <Stack.Screen name="ChatList" component={ChatList} options={{ headerShown: false }}/>
         <Stack.Screen name="Pagos" component={PaymentOptions} options={{ headerShown: false }}/>
+        <Stack.Screen name="SettingsStack" component={SettingsStack} options={{ headerShown: false }}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
