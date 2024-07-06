@@ -24,7 +24,7 @@ const AddBook = ({ route, navigation }) => {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const response = await axios.get('http://10.0.2.2:5000/genres');
+        const response = await axios.get('https://dbstorytrada-b5fcff8487d7.herokuapp.com/genres');
         setCategorias(response.data.genres);
       } catch (error) {
         console.error('Error fetching categories:', error);
