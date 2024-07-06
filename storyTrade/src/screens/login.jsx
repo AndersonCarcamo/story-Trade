@@ -13,15 +13,17 @@ const LoginScreen = ({ navigation }) => {
       
       console.log('Intentando iniciar sesión con:', email, password);
       
-      const response = await axios.post('http://127.0.0.1:5000/login', {
+      const response = await axios.post('https://dbstorytrada-b5fcff8487d7.herokuapp.com/login', {
         email,
         password,
       });
+      
       console.log('Respuesta del servidor:', response.data);
       if (response.status === 200){
         const user = response.data;
         await AsyncStorage.setItem('userToken', user.id.toString());
-        await AsyncStorage.setItem('userId', user.id.toString());
+        // await AsyncStorage.setItem('userId', user.id);
+        await AsyncStorage.setItem('userEmail', user.email);
         // navigation.navigate('Profile', { userId: user.id });
         navigation.navigate('Home');
       } else {

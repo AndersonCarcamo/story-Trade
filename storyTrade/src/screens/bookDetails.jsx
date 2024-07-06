@@ -8,35 +8,37 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const fetchImage = async (imageName) => {
   try {
-      const response = await fetch(`http://localhost:3000/get?mediaType=images&fileName=${imageName}`);
-      if (response.ok) {
-          return response.url;
-      } else {
-          return defaultImage; // Devuelve una imagen por defecto en caso de error
-      }
+    const response = await fetch(`https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get?fileName=images/${imageName}`);
+    if (response.ok) {
+      const base64Data = await response.text();
+      return `data:${response.headers.get('content-type')};base64,${base64Data}`;
+    } else {
+      return defaultImage;
+    }
   } catch (error) {
-      console.error(`Failed to fetch image ${imageName}: `, error);
-      return defaultImage; // Devuelve una imagen por defecto en caso de error
+    console.error(`Failed to fetch image ${imageName}: `, error);
+    return defaultImage;
   }
 };
 
 const fetchUserAvatar = async (avatarName) => {
   try {
-      const response = await fetch(`http://localhost:3000/get?user=avatars&mediaType=images&fileName=${avatarName}`);
-      if (response.ok) {
-          return response.url;
-      } else {
-          return defaultImage; // Devuelve una imagen por defecto en caso de error
-      }
+    const response = await fetch(`https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get?fileName=avatars/${avatarName}`);
+    if (response.ok) {
+      const base64Data = await response.text();
+      return `data:${response.headers.get('content-type')};base64,${base64Data}`;
+    } else {
+      return defaultImage;
+    }
   } catch (error) {
-      console.error(`Failed to fetch avatar ${avatarName}: `, error);
-      return defaultImage; // Devuelve una imagen por defecto en caso de error
+    console.error(`Failed to fetch avatar ${avatarName}: `, error);
+    return defaultImage;
   }
 };
 
 const fetchUserInfo = async (userId) => {
   try {
-      const response = await fetch(`http://localhost:5000/users/${userId}`);
+      const response = await fetch(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}`);
       if (response.ok) {
           return await response.json();
       } else {
@@ -49,18 +51,20 @@ const fetchUserInfo = async (userId) => {
   }
 };
   
+
 const fetchVideoUrl = async (videoName) => {
   try {
-      const response = await fetch(`http://localhost:3000/get?mediaType=videos&fileName=${videoName}`);
-      if (response.ok) {
-          return response.url;
-      } else {
-          console.error(`Failed to fetch video ${videoName}`);
-          return null;
-      }
-  } catch (error) {
-      console.error(`Failed to fetch video ${videoName}: `, error);
+    const response = await fetch(`https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get?fileName=videos/${videoName}`);
+    if (response.ok) {
+      const base64Data = await response.text();
+      return `data:${response.headers.get('content-type')};base64,${base64Data}`;
+    } else {
+      console.error(`Failed to fetch video ${videoName}`);
       return null;
+    }
+  } catch (error) {
+    console.error(`Failed to fetch video ${videoName}: `, error);
+    return null;
   }
 };
 
@@ -72,14 +76,14 @@ const likeBook = async (bookId, userId) => {
       return;
     }
 
-    const response = await fetch(`http://localhost:5000/like/${bookId}`, {
+    const response = await fetch(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/like/${bookId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         user_id: userId,
-        liker_id: likerId  // Usar el id del usuario desde AsyncStorage
+        liker_id: likerId
       })
     });
 
@@ -101,7 +105,7 @@ const unlikeBook = async (bookId, userId) => {
       return;
     }
 
-    const response = await fetch(`http://localhost:5000/unlike/${bookId}`, {
+    const response = await fetch(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/unlike/${bookId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -121,6 +125,7 @@ const unlikeBook = async (bookId, userId) => {
     console.error('Failed to unlike book: ', error.message);
   }
 };
+
 
 const BookDetails = ({ book, goBack }) => {
   const [bookImage, setBookImage] = useState(defaultImage);
@@ -154,7 +159,7 @@ const BookDetails = ({ book, goBack }) => {
 
     const checkIfLiked = async () => {
       const likerId = await AsyncStorage.getItem('userId');
-      const response = await fetch(`http://localhost:5000/like/${book.id}/check`, {
+      const response = await fetch(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/like/${book.id}/check`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

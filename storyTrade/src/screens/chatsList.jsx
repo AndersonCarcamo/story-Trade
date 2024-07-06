@@ -12,15 +12,15 @@ const chats = [
     name: 'Jose Sáenz',
     message: 'Empieza un chat...',
     time: '2hrs',
-    avatar: defaultAvatar, // Ajusta con la URL o recurso de la imagen correcta
-    bookId: 101 // Asumiendo que tienes un bookId asociado con cada chat
+    avatar: defaultAvatar,
+    bookId: 1
   },
   {
     id: 2,
     name: 'Carla Castro',
     message: 'Gracias! Me encantó el libro.',
-    avatar: defaultAvatar, // Ajusta con la URL o recurso de la imagen correcta
-    bookId: 102 // Asumiendo que tienes un bookId asociado con cada chat
+    avatar: defaultAvatar,
+    bookId: 2
   },
 ];
 
