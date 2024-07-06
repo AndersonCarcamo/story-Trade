@@ -3,7 +3,7 @@ import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'rea
 import { FontAwesome } from '@expo/vector-icons';
 import axios from 'axios';
 
-import defaultImage from '../assets/default_image.jpg'
+import defaultImage from '../assets/default_image.jpg';
 import SearchInput from './searchInput';
 
 const groupBooksByCategory = (books) => {
@@ -26,7 +26,7 @@ const fetchBookImages = async (books) => {
         book.imageUri = defaultImage;
       } else {
         try {
-          const fileName = `images/${imageFileName}`;  // Assuming all images are stored under 'images' directory
+          const fileName = `images/${imageFileName}`;
           const response = await axios.get('https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get', {
             params: {
               fileName: fileName,
@@ -34,7 +34,8 @@ const fetchBookImages = async (books) => {
           });
 
           if (response.status === 200) {
-            const imageUrl = `data:${response.headers['content-type']};base64,${response.data}`;
+            const base64Data = response.data;
+            const imageUrl = `data:${response.headers['content-type']};base64,${base64Data}`;
             book.imageUri = imageUrl;
           } else {
             book.imageUri = defaultImage;
@@ -52,11 +53,11 @@ const fetchBookImages = async (books) => {
 
 const searchBooks = async (query) => {
   try {
-    const response = await fetch(`http://localhost:5000/search?query=${query}`, {
+    const response = await fetch(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/search?query=${query}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
     });
 
     if (!response.ok) {
@@ -81,14 +82,11 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
       try {
         const updatedBooks = await fetchBookImages(books);
         setBooksWithImages(updatedBooks);
-        console.log(booksWithImages);
-        // console.log('Loaded books with images:', updatedBooks);
       } catch (error) {
         console.error('Failed to load books with images: ', error);
       }
     };
     loadBooks();
-    console.log(books);
   }, [books]);
 
   useEffect(() => {
@@ -100,7 +98,6 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
           setFilteredBooks(updatedResults);
         } catch (error) {
           console.error('Failed to perform search: ', error);
-          // Alert.alert('Error', 'Failed to perform search.');
         }
       } else {
         setFilteredBooks(booksWithImages);

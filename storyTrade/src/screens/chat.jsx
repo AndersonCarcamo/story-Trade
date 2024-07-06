@@ -40,6 +40,9 @@ const Chat = ({ navigation, route }) => {
 
     const confirmDelivery = async () => {
         try {
+            console.log(userId)
+            console.log(bookId)
+            console.log(ratingExchange)
             console.log(`user_id: ${userId}, book_id: ${bookId}, rating: ${ratingExchange}`);
             const transactionResponse = await axios.post('https://dbstorytrada-b5fcff8487d7.herokuapp.com/transactions', {
                 user_id: userId,
@@ -100,24 +103,6 @@ const Chat = ({ navigation, route }) => {
                         </TouchableOpacity>
                     ))}
                 </View>
-            </View>
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Home')}>
-                    <FontAwesome name="home" size={24} color="#FFA500" />
-                    <Text style={styles.footerButtonText}>Home</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Profile')}>
-                    <FontAwesome name="user" size={24} color="#666" />
-                    <Text style={styles.footerButtonText}>Profile</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('AddBook')}>
-                    <FontAwesome name="plus-circle" size={24} color="#666" />
-                    <Text style={styles.footerButtonText}>Add Book</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('AddGenre')}>
-                    <FontAwesome name="tags" size={24} color="#666" />
-                    <Text style={styles.footerButtonText}>Add Genre</Text>
-                </TouchableOpacity>
             </View>
         </View>
     );
