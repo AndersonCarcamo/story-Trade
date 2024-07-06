@@ -214,7 +214,7 @@ const BookDetails = ({ book, goBack }) => {
       </TouchableOpacity>
       <ScrollView>
         <View style={styles.bookDetails}>
-          <Image source={{ uri: bookImage }} style={styles.bookImage} />
+          <Image source={{ uri: bookImage || 'https://via.placeholder.com/150' }} style={styles.bookImage} />
           <View style={styles.bookInfo}>
             <Text style={styles.bookTitle}>{book.book_info.title}</Text>
             <Text style={styles.bookAuthor}>{book.book_info.author}</Text>
