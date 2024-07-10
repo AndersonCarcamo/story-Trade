@@ -9,9 +9,6 @@ const Header = ({ toggleMenu }) => {
         <Image source={require('../assets/logo_blanco.png')} style={styles.logo} />
         <Text style={styles.title}>STORY TRADE</Text>
       </View>
-      {/* <TouchableOpacity onPress={toggleMenu} style={styles.menuIcon}>
-        <FontAwesome name="bars" size={24} color="white" />
-      </TouchableOpacity> */}
     </View>
   );
 };

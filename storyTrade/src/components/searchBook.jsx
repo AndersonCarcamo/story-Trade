@@ -7,15 +7,14 @@ import defaultImage from '../assets/default_image.jpg';
 import SearchInput from './searchInput';
 
 const groupBooksByCategory = (books) => {
-  const groupedBooks = books.reduce((acc, book) => {
-    const category = book.book_info && book.book_info.category ? book.book_info.category : 'Unknown';
+  return books.reduce((acc, book) => {
+    const category = book.book_info?.category || 'Unknown';
     if (!acc[category]) {
       acc[category] = [];
     }
     acc[category].push(book);
     return acc;
   }, {});
-  return groupedBooks;
 };
 
 const fetchBookImages = async (books) => {
@@ -32,7 +31,7 @@ const fetchBookImages = async (books) => {
               fileName: fileName,
             },
           });
-
+          
           if (response.status === 200) {
             const base64Data = response.data;
             const imageUrl = `data:${response.headers['content-type']};base64,${base64Data}`;

@@ -5,7 +5,6 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../components/headerH';
 
-import Footer from '../components/footerH';
 import Menu from './navH';
 import SearchBook from '../components/searchBook';
 import BookDetails from './bookDetails';
