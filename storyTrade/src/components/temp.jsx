@@ -1,173 +1,423 @@
-// EditProfile.jsx
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
-import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, SafeAreaView, Image, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import * as FileSystem from 'expo-file-system';
-import Header from '../components/headerH';
-import defaultAvatar from '../assets/default_image.jpg';
+import Icon from 'react-native-vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
+import defaultImage from '../assets/default_image.jpg';
 
-const EditProfile = ({ navigation }) => {
-  const [user, setUser] = useState(null);
-  const [avatar, setAvatar] = useState(null);
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [age, setAge] = useState('');
-  const [avatarName, setAvatarName] = useState('');
-  const [avatarType, setAvatarType] = useState('');
+const AddBook = ({ route, navigation }) => {
+  const { userId } = route.params;
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [rating, setRating] = useState('');
+  const [release_year, setReleaseYear] = useState('');
+  const [antiquity, setAntiquity] = useState('');
+  const [editorial, setEditorial] = useState('');
+  const [categorias, setCategorias] = useState([]);
+  const [bookImage, setBookImage] = useState(null);
+  const [imageName, setImageName] = useState('');
+  const [imageType, setImageType] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const ref = useRef();
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      const userId = await AsyncStorage.getItem('userId');
-      if (userId) {
-        const response = await axios.get(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}`);
-        const userData = response.data;
-        setUser(userData);
-        setName(userData.name);
-        setUsername(userData.username);
-        setEmail(userData.email);
-        setPhone(userData.phone);
-        setAge(userData.age);
-
-        // Fetch avatar
-        const avatarUri = await fetchUserAvatar(userData.avatar);
-        setAvatar(avatarUri);
-      }
-    };
-    loadUserData();
-  }, []);
-
-  const fetchUserAvatar = async (avatarName) => {
-    try {
-      const response = await axios.get(`https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/get`, {
-        params: {
-          fileName: `avatars/${avatarName}`
-        }
-      });
-      if (response.data) {
-        return `data:${response.headers['content-type']};base64,${response.data}`;
-      } else {
-        return defaultAvatar;
-      }
-    } catch (error) {
-      console.error(`Failed to fetch avatar ${avatarName}: `, error);
-      return defaultAvatar;
+  const callExternal = () => {
+    if (ref.current) {
+      ref.current.fetchUser();
     }
   };
 
-  const handleChooseAvatar = async () => {
-    let result = await launchImageLibraryAsync({
-      mediaTypes: MediaTypeOptions.Images,
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) {
+          console.log('No token found');
+          return;
+        }
+        const response = await axios.get('https://dbstorytrada-b5fcff8487d7.herokuapp.com/genres', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        console.log('Categorias fetched', response.data);
+        setCategorias(response.data);
+      } catch (error) {
+        console.error('Error fetching categorias:', error);
+        setCategorias([]);
+      }
+    };
+    fetchCategorias();
+  }, []);
+  
+  const handleChooseImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
     if (!result.canceled) {
-      console.log('Selected avatar:', result.uri);
-      if (result.uri) {
-        setAvatar(result.uri);
-        const filename = `${email}_avatar.${result.uri.split('.').pop()}`;
-        setAvatarName(filename);
-        setAvatarType(result.type || 'image/jpeg');
-        console.log('Avatar type:', result.type || 'image/jpeg');
+      console.log('Selected image:', result.assets[0].uri);
+      if (result.assets[0].uri) {
+        setBookImage(result.assets[0].uri);
+        const filename = `${userId}_book_${Date.now()}`;
+        setImageName(filename);
+        setImageType(result.assets[0].type || 'image/jpeg');
+        console.log('Image type:', result.assets[0].type || 'image/jpeg');
       }
     } else {
-      console.log('User cancelled image picker');
+        console.log('User cancelled image picker');
     }
   };
 
-  const handleSave = async () => {
-    const userId = await AsyncStorage.getItem('userId');
-    const updatedData = {
-      name,
-      username,
-      email,
-      phone,
-      age,
-      avatar: avatarName || user.avatar,
-    };
-
-    if (avatar) {
-      const base64Content = await FileSystem.readAsStringAsync(avatar, { encoding: 'base64' });
-      const formData = {
-        fileName: avatarName,
-        type: 'avatars',
-        fileContent: base64Content
-      };
-      console.log('Uploading avatar with formData:', formData);
-      try {
-        const response = await axios.post('https://1h2tipwe92.execute-api.us-east-2.amazonaws.com/deploy-st1/upload', formData, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        console.log('Upload response:', response.data);
-      } catch (error) {
-        console.error('Failed to upload avatar: ', error);
-        Alert.alert('Error', 'No se pudo subir la imagen del perfil');
+  const handleAddBook = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        console.log('No token found');
         return;
       }
-    }
 
-    try {
-      await axios.put(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}`, updatedData);
-      Alert.alert('Perfil actualizado con éxito');
-      navigation.goBack();
+      setIsModalVisible(true);
+      setIsLoading(true);
+
+      if (bookImage) {
+        const base64Content = bookImage.split(',')[1];
+        const formData = {
+          fileName: imageName,
+          type: 'images',
+          fileContent: base64Content
+        };
+        console.log('Uploading book image with formData:', formData);
+        try {
+          const response = await axios.post('https://1h2tipwe92.execute-api.us-east-2.amazonaws.com/deploy-st1/upload', formData, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          console.log('Upload response:', response.data);
+        } catch (error) {
+          console.error('Failed to upload book image: ', error);
+          Alert.alert('Error', 'No se pudo subir la imagen del libro');
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      const bookData = { 
+        title, 
+        author,
+        description,
+        category,
+        rating: parseFloat(rating),
+        release_year: parseInt(release_year, 10),
+        antiquity,
+        editorial,
+        image: imageName
+      };
+
+      console.log('Adding book with data:', bookData);
+
+      const response = await axios.post(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users/${userId}/books`, bookData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      console.log('Response status:', response.status);
+      if (response.status === 200) {
+        setIsLoading(false);
+        Alert.alert('Libro agregado');
+        callExternal();
+        navigation.navigate('Profile', { userId, refresh: true });
+      } else {
+        setIsLoading(false);
+        Alert.alert('Error', 'No se pudo agregar el libro');
+      }
     } catch (error) {
-      Alert.alert('Error al actualizar el perfil', error.message);
+      setIsLoading(false);
+      console.error('Error adding book:', error);
+      Alert.alert('Error', 'Error de conexión. Inténtalo de nuevo.');
     }
   };
 
-  if (!user) {
-    return <Text>Loading...</Text>;
-  }
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+  };
 
   return (
-    <View >
-      <Header/>
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.title}>Editar Perfil</Text>
-        <TouchableOpacity onPress={handleChooseAvatar}>
-          <Image source={avatar ? { uri: avatar } : defaultAvatar} style={styles.avatar} />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Phone"
-          value={phone}
-          onChangeText={setPhone}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Age"
-          value={age}
-          onChangeText={setAge}
-        />
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save</Text>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Profile', { userId })}>
+            <Icon name="arrow-back" size={30} color="#fff" />
+          </TouchableOpacity>
+          <Image source={require('../assets/logo_blanco.png')} style={styles.header_image} />
+          <Text style={styles.headerText}>PERFIL</Text>
+        </View>
+        <View style={styles.title_box}>
+          <Text style={styles.title}>Agregar Libro</Text>
+        </View>
+        <ScrollView style={styles.inputs}>
+          <TextInput
+            placeholder="Título del libro"
+            value={title}
+            onChangeText={setTitle}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Autor"
+            value={author}
+            onChangeText={setAuthor}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Descripción"
+            value={description}
+            onChangeText={setDescription}
+            style={styles.input}
+          />
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={category}
+              onValueChange={(itemValue) => setCategory(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+            >
+              <Picker.Item label="Selecciona una categoría" value="" />
+              {categorias.map((cat) => (
+                <Picker.Item key={cat.id} label={cat.name} value={cat.name} />
+              ))}
+            </Picker>
+          </View>
+          <TextInput
+            placeholder="Rating"
+            value={rating}
+            onChangeText={setRating} 
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Año de salida"
+            value={release_year}
+            onChangeText={setReleaseYear}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Antiguedad"
+            value={antiquity}
+            onChangeText={setAntiquity}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Editorial"
+            value={editorial}
+            onChangeText={setEditorial}
+            style={styles.input}
+          />
+          <TouchableOpacity onPress={handleChooseImage} style={styles.chooseImageButton}>
+            <Text style={styles.chooseImageButtonText}>{bookImage ? "Imagen seleccionada" : "Seleccionar Imagen"}</Text>
+          </TouchableOpacity>
+          <View style={styles.imageContainer}>
+            {bookImage ? (
+              <Image source={{ uri: bookImage }} style={styles.bookImage} />
+            ) : (
+              <Text style={styles.placeholderText}>Subir imagen</Text>
+            )}
+          </View>
+        </ScrollView>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddBook}>
+          <Text style={styles.addButtonText}>Agregar</Text>
         </TouchableOpacity>
       </View>
-    </View>
+      <Modal
+        transparent={true}
+        animationType="fade"
+        visible={isModalVisible}
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#ffbd59" />
+                <Text style={styles.loadingText}>Cargando...</Text>
+              </View>
+            ) : (
+              <View style={styles.successContainer}>
+                <Text style={styles.successText}>Libro creado</Text>
+                <TouchableOpacity style={styles.closeButton} onPress={handleCloseModal}>
+                  <Text style={styles.closeButtonText}>Cerrar</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#efefef',
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    backgroundColor: '#ffbd59',
+    height: 250,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+  },
+  header_image: {
+    height: 100,
+    width: 130,
+    marginBottom: 10,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+  },
+  headerText: {
+    fontFamily: 'Typewriter-Bold',
+    fontSize: 30,
+    color: '#fff',
+    textShadowColor: '#949494',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 10,
+  },
+  title_box: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 25,
+  },
+  title: {
+    fontSize: 20,
+  },
+  inputs: {
+    marginHorizontal: 30,
+    flexGrow: 1,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    marginBottom: 25,
+    paddingHorizontal: 15,
+    height: 55,
+    fontSize: 16,
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    marginBottom: 25,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    height: 55,
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+  },
+  picker: {
+    height: 55,
+    width: '100%',
+  },
+  pickerItem: {
+    fontSize: 16,
+    height: 55,
+  },
+  chooseImageButton: {
+    backgroundColor: '#ffbd59',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  chooseImageButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  imageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 200,
+    marginVertical: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderColor: '#dcdcdc',
+    borderWidth: 1,
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#dcdcdc',
+  },
+  bookImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+  },
+  addButton: {
+    backgroundColor: '#ffbd59',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginVertical: 20,
+    marginHorizontal: 30,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  successContainer: {
+    alignItems: 'center',
+  },
+  successText: {
+    fontSize: 18,
+    color: '#333',
+    marginBottom: 20,
+  },
+  closeButton: {
+    backgroundColor: '#ffbd59',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+});
+
+export default AddBook;

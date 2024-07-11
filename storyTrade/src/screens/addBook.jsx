@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, SafeAreaView, Image, Button, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, SafeAreaView, Image, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import UserProfile from './profile';
+import defaultImage from '../assets/default_image.jpg';
 
 const AddBook = ({ route, navigation }) => {
   const { userId } = route.params;
@@ -18,6 +19,11 @@ const AddBook = ({ route, navigation }) => {
   const [antiquity, setAntiquity] = useState('');
   const [editorial, setEditorial] = useState('');
   const [categorias, setCategorias] = useState([]);
+  const [bookImage, setBookImage] = useState(null);
+  const [imageName, setImageName] = useState('');
+  const [imageType, setImageType] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const ref = useRef();
 
   const callExternal = () => {
@@ -48,6 +54,28 @@ const AddBook = ({ route, navigation }) => {
     };
     fetchCategorias();
   }, []);
+  
+  const handleChooseImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      console.log('Selected image:', result.assets[0].uri);
+      if (result.assets[0].uri) {
+        setBookImage(result.assets[0].uri);
+        const filename = `${userId}_book_${Date.now()}`;
+        setImageName(filename);
+        setImageType(result.assets[0].type || 'image/jpeg');
+        console.log('Image type:', result.assets[0].type || 'image/jpeg');
+      }
+    } else {
+        console.log('User cancelled image picker');
+    }
+  };
 
   const handleAddBook = async () => {
     try {
@@ -56,15 +84,39 @@ const AddBook = ({ route, navigation }) => {
         console.log('No token found');
         return;
       }
+
+      if (bookImage) {
+        const base64Content = bookImage.split(',')[1];
+        const formData = {
+          fileName: imageName,
+          type: 'images',
+          fileContent: base64Content
+        };
+        console.log('Uploading book image with formData:', formData);
+        try {
+          const response = await axios.post('https://1h2tipwe92.execute-api.us-east-2.amazonaws.com/deploy-st1/upload', formData, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          console.log('Upload response:', response.data);
+        } catch (error) {
+          console.error('Failed to upload book image: ', error);
+          Alert.alert('Error', 'No se pudo subir la imagen del libro');
+          return;
+        }
+      }
+      
       const bookData = { 
-        title: title, 
-        author: author,
-        description: description,
-        category: category,
+        title, 
+        author,
+        description,
+        category,
         rating: parseFloat(rating),
         release_year: parseInt(release_year, 10),
-        antiquity: antiquity,
-        editorial: editorial
+        antiquity,
+        editorial,
+        image: imageName
       };
 
       console.log('Adding book with data:', bookData);
@@ -158,6 +210,16 @@ const AddBook = ({ route, navigation }) => {
             onChangeText={setEditorial}
             style={styles.input}
           />
+          <TouchableOpacity onPress={handleChooseImage} style={styles.chooseImageButton}>
+            <Text style={styles.chooseImageButtonText}>{bookImage ? "Imagen seleccionada" : "Seleccionar Imagen"}</Text>
+          </TouchableOpacity>
+          <View style={styles.imageContainer}>
+            {bookImage ? (
+              <Image source={{ uri: bookImage }} style={styles.bookImage} />
+            ) : (
+              <Text style={styles.placeholderText}>Subir imagen</Text>
+            )}
+          </View>       
         </ScrollView>
         <TouchableOpacity style={styles.addButton} onPress={handleAddBook}>
           <Text style={styles.addButtonText}>Agregar</Text>
@@ -238,6 +300,37 @@ const styles = StyleSheet.create({
   pickerItem: {
     fontSize: 16,
     height: 55,
+  },
+  chooseImageButton: {
+    backgroundColor: '#ffbd59',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  chooseImageButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  imageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 200,
+    marginVertical: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderColor: '#dcdcdc',
+    borderWidth: 1,
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#dcdcdc',
+  },
+  bookImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
   },
   addButton: {
     backgroundColor: '#ffbd59',

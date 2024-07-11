@@ -13,6 +13,8 @@ const UserProfile = ({ userId, navigation }) => {
   const [markedBooks, setMarkedBooks] = useState([]);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false);
+  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState(null);
   const [starRating, setStarRating] = useState(0);
   const [trades, setTrades] = useState(0);
@@ -33,6 +35,28 @@ const UserProfile = ({ userId, navigation }) => {
   const closeModal = () => {
     setModalVisible(false);
   };
+
+  const openSubscriptionModal = () => {
+    setSubscriptionModalVisible(true);
+  };
+
+  const closeSubscriptionModal = () => {
+    setSubscriptionModalVisible(false);
+  };
+
+  const openConfirmationModal = () => {
+    setConfirmationModalVisible(true);
+  };
+
+  const closeConfirmationModal = () => {
+    setConfirmationModalVisible(false);
+  };
+
+  const handleSubscribe = () => {
+    closeSubscriptionModal();
+    openConfirmationModal();
+  };
+
 
   const handleAddGenre = async () => {
     if (!selectedGenre) {
@@ -359,6 +383,53 @@ const UserProfile = ({ userId, navigation }) => {
                 </TouchableWithoutFeedback>
               </Modal>
             </View>
+            <TouchableOpacity style={styles.subscribeButton} onPress={openSubscriptionModal}>
+              <Text style={styles.subscribeButtonText}>Afiliarse a Suscripción</Text>
+            </TouchableOpacity>
+            <Modal
+              visible={subscriptionModalVisible}
+              animationType="fade"
+              transparent={true}
+              onRequestClose={closeSubscriptionModal}
+            >
+              <TouchableWithoutFeedback onPress={closeSubscriptionModal}>
+                <View style={styles.modalBackground}>
+                  <TouchableWithoutFeedback>
+                  <View style={styles.subscriptionModalContainer}>
+                      <Text style={styles.modal_title}>Información de Suscripción</Text>
+                      <Text style={styles.modal_text}>Suscripción: Elimina la comisión por cada intercambio</Text>
+                      <Text style={styles.modal_text}>Precio: 4.99 soles/mensuales</Text>
+                      <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+                        <Text style={styles.subscribeButtonText}>Suscribirse</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.closeButton} onPress={closeSubscriptionModal}>
+                        <Text style={styles.closeButtonText}>Cerrar</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+            <Modal
+              visible={confirmationModalVisible}
+              animationType="fade"
+              transparent={true}
+              onRequestClose={closeConfirmationModal}
+            >
+              <TouchableWithoutFeedback onPress={closeConfirmationModal}>
+                <View style={styles.modalBackground}>
+                  <TouchableWithoutFeedback>
+                    <View style={styles.confirmationModalContainer}>
+                      <Icon name="checkmark-circle" size={80} color="#4BB543" />
+                      <Text style={styles.confirmationText}>Se ha suscrito</Text>
+                      <TouchableOpacity style={styles.closeButton} onPress={closeConfirmationModal}>
+                        <Text style={styles.closeButtonText}>Cerrar</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
           </View>
           <View style={styles.libros}>
             <Text style={styles.libros_titulo}>Lista de libros:</Text>
@@ -530,6 +601,19 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     elevation: 8,
   },
+  subscribeButton: {
+    backgroundColor: '#ffbd59',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  subscribeButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
   modalBackground: {
     flex: 1,
     justifyContent: 'center',
@@ -543,9 +627,44 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+  subscriptionModalContainer: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   modal_title: {
-    fontSize: 20,
+    fontSize: 24,
+    fontWeight: 'bold',
     marginBottom: 20,
+    color: '#333',
+  },
+  modal_text: {
+    fontSize: 18,
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#555',
+  },
+  closeButton: {
+    backgroundColor: '#ffbd59',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
   modal_genreItem: {
     padding: 15,
@@ -572,6 +691,27 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  confirmationModalContainer: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  confirmationText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 20,
+    color: '#4BB543',
   },
 });
 

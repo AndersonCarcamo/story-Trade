@@ -115,6 +115,7 @@ const checkIfLiked = async (bookId, ownerId) => {
 
     if (response.ok) {
       const data = await response.json();
+      console.log(`checkIfLiked: bookId=${bookId}, ownerId=${ownerId}, likerId=${likerId}, hasLiked=${data.hasLiked}`);
       return data.hasLiked;
     } else {
       console.error('Failed to check if liked: ', response.statusText);
@@ -164,12 +165,23 @@ const BookDetails = ({ book, goBack }) => {
     const initializeLikeState = async () => {
       const likerId = await AsyncStorage.getItem('userId');
       setCurrentUser(likerId);
+      console.log(book.book_info.id),
+      console.log(book.users)
       const likedState = {};
       for (const user of book.users) {
-        const liked = await checkIfLiked(book.book_info.id, user.id);
-        likedState[user.id] = liked;
+        console.log(user.id)
+        console.log(likerId)
+        if (user.id != likerId) {
+          console.log("entra aqui")
+          const liked = await checkIfLiked(book.book_info.id, user.id);
+          console.log("si verifica el like")
+          likedState[user.id] = liked;
+          console.log('se ha likeado: ', liked);
+        }
       }
+      console.log(likedState)
       setHasLiked(likedState);
+      console.log(hasLiked);
     };
 
     loadBookImage();
@@ -177,6 +189,10 @@ const BookDetails = ({ book, goBack }) => {
     loadVideo();
     initializeLikeState();
   }, [book]);
+
+  useEffect(() => {
+    console.log('Updated hasLiked:', hasLiked);
+  }, [hasLiked]);
 
   const openModal = (userId) => {
     const userBook = book.users.find(u => u.id === userId).books.find(b => b.book_info.id === book.book_info.id);
