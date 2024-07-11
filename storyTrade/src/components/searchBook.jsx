@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import axios from 'axios';
 
@@ -75,14 +75,18 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
   const [booksWithImages, setBooksWithImages] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [groupedBooks, setGroupedBooks] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadBooks = async () => {
       try {
+        setLoading(true);
         const updatedBooks = await fetchBookImages(books);
         setBooksWithImages(updatedBooks);
       } catch (error) {
         console.error('Failed to load books with images: ', error);
+      } finally {
+        setLoading(false);
       }
     };
     loadBooks();
@@ -92,11 +96,14 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
     const performSearch = async () => {
       if (search) {
         try {
+          setLoading(true);
           const results = await searchBooks(search);
           const updatedResults = await fetchBookImages(results);
           setFilteredBooks(updatedResults);
         } catch (error) {
           console.error('Failed to perform search: ', error);
+        } finally {
+          setLoading(false);
         }
       } else {
         setFilteredBooks(booksWithImages);
@@ -113,7 +120,13 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
   return (
     <View style={styles.container}>
       <SearchInput search={search} handleSearch={handleSearch} />
-      <ScrollView>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+          <Text>Cargando libros...</Text>
+        </View>
+      ) : (
+      <ScrollView showsVerticalScrollIndicator={false}>
         {Object.keys(groupedBooks).map((category) => (
           <View key={category} style={styles.categoryContainer}>
             <Text style={styles.categoryTitle}>{category}</Text>
@@ -135,6 +148,7 @@ const SearchBook = ({ books, search, handleSearch, viewDetails }) => {
           </View>
         ))}
       </ScrollView>
+      )}
     </View>
   );
 };
@@ -143,6 +157,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   categoryContainer: {
     marginBottom: 16,
