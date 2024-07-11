@@ -4,7 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } fro
 import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-
+import * as FileSystem from 'expo-file-system'
 import Header from '../components/headerH';
 import defaultAvatar from '../assets/default_image.jpg';
 
@@ -67,13 +67,15 @@ const EditProfile = ({ navigation }) => {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-        console.log('Selected avatar:', result.uri);
-      setAvatar(result.uri);
-      const filename = `${email}_avatar.${result.uri.split('.').pop()}`;
-      setAvatarName(filename);
-      setAvatarType(result.type || 'image/jpeg');
-    console.log('Avatar type:', result.type || 'image/jpeg');
+    if (!result.canceled) {
+      console.log('Selected avatar:', result.assets[0].uri);
+      if (result.assets[0].uri) {
+        setAvatar(result.assets[0].uri);
+        const filename = `${email}_avatar`;
+        setAvatarName(filename);
+        setAvatarType(result.assets[0].type || 'image/jpeg');
+        console.log('Avatar type:', result.assets[0].type || 'image/jpeg');
+      }
     } else {
         console.log('User cancelled image picker');
     }
@@ -90,18 +92,24 @@ const EditProfile = ({ navigation }) => {
       avatar: avatarName || user.avatar,
     };
 
+    console.log("userId: ", userId)
+    console.log("avatar: ", avatar)
     if (avatar) {
-      const formData = new FormData();
-      formData.append('file', {
-        uri: avatar,
-        name: avatarName,
-        type: avatarType,
-      });
+      console.log("entra aqui")
+      const base64Content = avatar.split(',')[1];
+      console.log(base64Content)
+      const fileContent = `data:${avatarType};base64,${base64Content}`;
+      const formData = {
+        fileName: avatarName,
+        type: 'avatars',
+        fileContent: base64Content
+      };
+      console.log(formData)
       console.log('Uploading avatar with formData:', formData);
       try {
-        const response = await axios.post('https://opqwurrut9.execute-api.us-east-2.amazonaws.com/dev/upload', formData, {
+        const response = await axios.post('https://1h2tipwe92.execute-api.us-east-2.amazonaws.com/deploy-st1/upload', formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
           },
         });
         console.log('Upload response:', response.data);

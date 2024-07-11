@@ -3,8 +3,8 @@
     "plugins": [
       "@react-native-google-signin/google-signin"
     ],
-    "name": "storyTrade",
-    "slug": "storyTrade",
+    "name": "storyTrade2",
+    "slug": "storyTrade2",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/logo.png",
@@ -14,25 +14,28 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffbd59"
     },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.annderson23.storyTrade"
-    },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./src/assets/logo_blanco.png",
-        "backgroundColor": "#ffffff"
-      },
       "package": "com.annderson23.storyTrade",
-      "googleServicesFile": "./google-services.json"
+      "versionCode": 1,
+      "permissions": [],
+      "config": {
+        "googleMaps": {
+          "apiKey": "<your-google-maps-api-key>"
+        }
+      }
     },
-    "web": {
-      "favicon": "./src/assets/logo_blanco.png"
+    "ios": {
+      "bundleIdentifier": "com.annderson23.storyTrade",
+      "buildNumber": "1.0.0",
+      "config": {
+        "googleMapsApiKey": "<your-google-maps-api-key>"
+      }
     },
     "extra": {
       "eas": {
-        "projectId": "8585a3f1-8ce0-41a8-b9bd-9aa34ba5e988"
+        "projectId": "d90a0c08-95e7-4086-bf1d-9382f7e19b13"
       }
-    }
+    },
+    "owner": "aleangepeto"
   }
 }
