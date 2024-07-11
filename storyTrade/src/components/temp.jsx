@@ -16,7 +16,6 @@ const RegisterScreen = ({ navigation }) => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [imageSource, setImageSource] = useState(null);
   const [avatarName, setAvatarName] = useState('');
-  const [avatarType, setAvatarType] = useState('');
 
   const selectImage = async () => {
     try {
@@ -33,10 +32,9 @@ const RegisterScreen = ({ navigation }) => {
       });
 
       if (!pickerResult.canceled) {
-        setImageSource({ uri: pickerResult.assets[0].uri });
         const filename = `${email}_avatar`;
         setAvatarName(filename);
-        setAvatarType(pickerResult.type || 'image/jpeg');
+        setImageSource({ uri: pickerResult.assets[0].uri });
       }
     } catch (error) {
       console.error('Image picker error:', error);
@@ -61,7 +59,7 @@ const RegisterScreen = ({ navigation }) => {
             type: 'avatars',
             fileContent: base64Content,
           };
-
+          console.log(formData);
           axios.post('https://1h2tipwe92.execute-api.us-east-2.amazonaws.com/deploy-st1/upload', formData, {
             headers: {
               'Content-Type': 'application/json',
@@ -87,7 +85,7 @@ const RegisterScreen = ({ navigation }) => {
     } catch (error) {
       console.error('Image upload error:', error);
       Alert.alert('Error', 'Failed to upload image.');
-      throw error;
+      throw error; // Lanza el error para manejarlo en handleRegister
     }
   };
 

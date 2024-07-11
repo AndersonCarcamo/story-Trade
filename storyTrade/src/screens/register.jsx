@@ -36,9 +36,14 @@ const RegisterScreen = ({ navigation }) => {
 
       if (!pickerResult.canceled) {
         setImageSource({ uri: pickerResult.assets[0].uri });
-        const filename = `${email}_avatar`;
+        const type = pickerResult.type || 'image/jpeg';
+        setAvatarType(type);
+
+        const extension = type.split('/')[1];
+        console.log(avatarType)
+        const filename = `${username}_avatar.${extension}`;
         setAvatarName(filename);
-        setAvatarType(pickerResult.type || 'image/jpeg');
+        
       }
     } catch (error) {
       console.error('Image picker error:', error);
@@ -121,19 +126,20 @@ const RegisterScreen = ({ navigation }) => {
     }
 
     try {
+      console.log('Registrando usuario con avatar:', avatarName);
       const response = await axios.post(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/users`, {
         email,
         name,
         username,
         password,
-        avatar: profileImageUrl, // Agregar la URL de la imagen al registro
+        avatar: avatarName, // Agregar la URL de la imagen al registro
       });
 
       if (response.status === 201) {
         // Añadir un pequeño retardo antes de intentar iniciar sesión
         setTimeout(() => {
           handleLogin();
-        }, 500); // Retardo de 500ms
+        }, 1000); // Retardo de 500ms
       } else {
         Alert.alert('Error', 'Error en las credenciales');
       }
