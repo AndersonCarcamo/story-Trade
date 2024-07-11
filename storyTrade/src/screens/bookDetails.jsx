@@ -207,13 +207,85 @@ const BookDetails = ({ book, goBack }) => {
     setSelectedUserBook(null);
   };
 
+  // const handleLike = async (userId) => {
+  //   if (hasLiked[userId]) {
+  //     await unlikeBook(book.book_info.id, userId);
+  //   } else {
+  //     await likeBook(book.book_info.id, userId);
+  //   }
+  //   setHasLiked({ ...hasLiked, [userId]: !hasLiked[userId] });
+  // };
+
   const handleLike = async (userId) => {
-    if (hasLiked[userId]) {
-      await unlikeBook(book.book_info.id, userId);
-    } else {
-      await likeBook(book.book_info.id, userId);
+    try {
+      const bookId = book.book_info.id;
+      console.log('Este es el libro miraaaaaaaaaaaa:', bookId);
+      
+      const likerId = await AsyncStorage.getItem('userId');
+      console.log('likerId retrieved from AsyncStorage:', likerId);
+  
+      if (!likerId) {
+        console.error('Liker ID is not available in AsyncStorage');
+        return;
+      }
+  
+      if (hasLiked[userId]) {
+        console.log('User has already liked this book, unliking...');
+        await unlikeBook(bookId, userId);
+      } else {
+        console.log('User has not liked this book yet, liking...');
+        await likeBook(bookId, userId);
+  
+        console.log('Checking if the other user has also liked a book...');
+        const response = await fetch(`https://dbstorytrada-b5fcff8487d7.herokuapp.com/like/${bookId}/check`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            liker_id: likerId
+          })
+        });
+        console.log(response);
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Response data from like check:', data);
+          
+          if (data.hasLiked) {
+            console.log('The other user has also liked a book, creating a match...');
+            const matchResponse = await fetch('https://dbstorytrada-b5fcff8487d7.herokuapp.com/matches', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                user1_id: likerId,
+                user2_id: userId
+              })
+            });
+
+            if (!matchResponse.ok) {
+              const matchErrorData = await matchResponse.json();
+              console.error('Failed to create match:', matchErrorData.description || 'Unknown error');
+              throw new Error(matchErrorData.description || 'Failed to create match');
+            }
+  
+            console.log('Match created successfully!');
+          } else {
+            console.log('The other user has not liked a book yet.');
+          }
+        } else {
+          console.error('Failed to check if liked:', response.statusText);
+        }
+      }
+  
+      setHasLiked({ ...hasLiked, [userId]: !hasLiked[userId] });
+      console.log('Updated hasLiked state:', { ...hasLiked, [userId]: !hasLiked[userId] });
+    } catch (error) {
+      console.error('Failed to like/unlike book or create match:', error.message);
     }
-    setHasLiked({ ...hasLiked, [userId]: !hasLiked[userId] });
   };
 
   const loadMoreUsers = () => {
