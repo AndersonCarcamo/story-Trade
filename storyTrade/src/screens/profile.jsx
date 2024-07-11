@@ -314,7 +314,7 @@ const UserProfile = ({ userId, navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
           <View style={styles.header}>
             <Image source={require('../assets/logo_blanco.png')} style={styles.header_image}/>
